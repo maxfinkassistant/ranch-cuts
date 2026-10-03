@@ -44,7 +44,7 @@ export default function Local() {
         <div className="wide local-hero-grid">
           <div>
             <span className="tag eyebrow">Open now · {p.stateName}</span>
-            <h1 className="d local-title">Ranch Cuts<br />{p.city}</h1>
+            <h1 className="local-title"><img src={ASSET("brand/ranchcuts-horizontal-navy.svg")} alt="Ranch Cuts" width={438} height={106} /><span className="city">{p.city}</span></h1>
             <p className="local-lockup">
               Beef from <b>{p.ranch.name}</b>,<br />cut at <b>{p.butcher.name}</b>.
             </p>
@@ -53,7 +53,7 @@ export default function Local() {
               in {lowerFirst(p.ranch.region)}, cut by a butcher in {p.butcher.city}, picked up about an hour from {p.city}.
             </p>
             <div className="hero-actions">
-              <Link to="/order" className="btn btn-solid btn-big">Reserve a share</Link>
+              <Link to="/order" className="btn btn-accent btn-big">Reserve a share</Link>
               <a href="#meet" className="btn btn-ghost btn-big">Meet them</a>
             </div>
           </div>
@@ -209,7 +209,7 @@ export default function Local() {
           </div>
         </div>
         <div className="wide" style={{ marginTop: "var(--space-xl)", display: "flex", gap: "var(--space-sm)", flexWrap: "wrap" }}>
-          <Link to="/order" className="btn btn-solid btn-big">Reserve a share in {p.city}</Link>
+          <Link to="/order" className="btn btn-accent btn-big">Reserve a share in {p.city}</Link>
           <Link to="/how-it-works" className="btn btn-ghost btn-big">How it works</Link>
         </div>
       </section>
@@ -236,7 +236,7 @@ function PlannedPage({ slug }: { slug: string }) {
         <div className="wide local-hero-grid">
           <div>
             <span className="tag eyebrow">Planned · not open yet</span>
-            <h1 className="d local-title">Ranch Cuts<br />{m.city}</h1>
+            <h1 className="local-title"><img src={ASSET("brand/ranchcuts-horizontal-navy.svg")} alt="Ranch Cuts" width={438} height={106} /><span className="city">{m.city}</span></h1>
             <p className="lede">
               {m.city} is on our list: {m.butchersNearby} butchers that process beef are within about an hour.
               We haven't signed a ranch or a butcher yet. Sign-ups from {m.city} decide how soon we do.

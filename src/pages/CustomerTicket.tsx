@@ -59,7 +59,7 @@ export default function CustomerTicket() {
   return (
     <main className="page order-main" style={{ maxWidth: 680 }}>
       <div className="admin-bar no-print">
-        <div className="tag" style={{ color: "var(--rust)" }}>Order ticket</div>
+        <div className="tag" style={{ color: "var(--navy)" }}>Order ticket</div>
         <div className="admin-actions">
           <button
             className="btn btn-solid"

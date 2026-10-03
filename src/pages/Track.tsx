@@ -55,7 +55,7 @@ export default function Track() {
         </div>
 
         {code && !order && (
-          <p className="small" style={{ color: "var(--rust)", marginBottom: "var(--space-md)" }}>
+          <p className="small" style={{ color: "var(--navy)", marginBottom: "var(--space-md)" }}>
             No order found for <span className="mono">{code.toUpperCase()}</span>. Check the code and try again.
           </p>
         )}
@@ -114,7 +114,7 @@ export default function Track() {
     <main className="page order-main">
       <div className="section-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: "var(--space-md)", maxWidth: "none" }}>
         <div>
-          <div className="tag" style={{ color: "var(--rust)", marginBottom: "var(--space-xs)" }}>Order {order.code}</div>
+          <div className="tag" style={{ color: "var(--navy)", marginBottom: "var(--space-xs)" }}>Order {order.code}</div>
           <h2 className="d">{SHARES[viewShare].label} beef · {season.label}</h2>
           <p className="mute" style={{ marginTop: "var(--space-xs)" }}>
             {LISTING_NAME}. Beef from {LIVE.ranch.name}, cut at {LIVE.butcher.name}.

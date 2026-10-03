@@ -103,7 +103,7 @@ export default function Order() {
     const pc = shareCost(placed.share);
     return (
       <main className="page confirm-wrap">
-        <div className="tag" style={{ color: "var(--rust)", marginBottom: "var(--space-md)" }}>Reserved · {season.label}</div>
+        <div className="tag" style={{ color: "var(--navy)", marginBottom: "var(--space-md)" }}>Reserved · {season.label}</div>
         <h2 className="d" style={{ fontSize: "clamp(2.2rem,5vw,3.2rem)" }}>
           {rolled ? `Your beef is booked for ${season.name}.` : "Your beef is booked."}
         </h2>
@@ -188,7 +188,7 @@ export default function Order() {
     return (
       <main className="page order-main">
         <div className="section-head">
-          <div className="tag" style={{ color: "var(--rust)", marginBottom: "var(--space-xs)" }}>
+          <div className="tag" style={{ color: "var(--navy)", marginBottom: "var(--space-xs)" }}>
             {full
               ? `${nextSeason.label} harvest · pickup ${nextSeason.pickupText}`
               : `${season.label} harvest · pickup ${season.pickupText}`}
@@ -212,7 +212,7 @@ export default function Order() {
               <button key={s.id} onClick={() => setShare(s.id)} className={"share-card" + (on ? " on" : "")}>
                 {s.id === "half" && <span className="share-badge">Most popular</span>}
                 <div className="d">{s.label} beef</div>
-                <div className="d" style={{ fontSize: "2rem", marginTop: 6, color: on ? "var(--brass)" : "var(--rust)" }}>
+                <div className="d" style={{ fontSize: "2rem", marginTop: 6, color: on ? "var(--on-navy)" : "var(--navy)" }}>
                   {money(s.total)}<sup>*</sup>
                 </div>
                 <div className="of-rate">{money2(s.rate)}/lb all in<sup>*</sup></div>
@@ -377,13 +377,13 @@ export default function Order() {
                     onChange={(e) => setWho({ ...who, [k]: e.target.value })} />
                 </div>
               ))}
-              <button className="btn btn-dark btn-wide" disabled={placing || !ready} onClick={place}>
+              <button className="btn btn-accent btn-wide" disabled={placing || !ready} onClick={place}>
                 {placing ? "Reserving…" : `Reserve & pay ${money(DEPOSIT)} deposit`}
               </button>
               {!ack && who.name && who.email && who.phone && (
                 <p className="small mute" style={{ textAlign: "center" }}>Check the box above to reserve.</p>
               )}
-              {placeError && <p className="small" style={{ color: "var(--rust)" }}>{placeError}</p>}
+              {placeError && <p className="small" style={{ color: "var(--navy)" }}>{placeError}</p>}
               <p className="small mute" style={{ textAlign: "center" }}>
                 {STRIPE_PAYMENT_LINK
                   ? "Next: secure card payment through Stripe."
@@ -416,7 +416,7 @@ export default function Order() {
 
   const ThicknessPicker = ({ value, onPick, count, what }: { value?: string; onPick: (v: string) => void; count?: [number, number]; what?: string }) => (
     <div className="thickness">
-      <div className="tag" style={{ color: "var(--mute)", marginBottom: "var(--space-sm)" }}>Steak thickness</div>
+      <div className="tag" style={{ color: "var(--muted)", marginBottom: "var(--space-sm)" }}>Steak thickness</div>
       <div className="chips">
         {THICKNESS_OPTIONS.map((t) => (
           <button key={t.id} className={"chip" + (value === t.id ? " on" : "")} onClick={() => onPick(t.id)}>{t.label}</button>
@@ -464,7 +464,7 @@ export default function Order() {
             <ThicknessPicker value={a.rib.thickness} count={c} what={a.rib.choice === "ribsteak" ? "rib steaks" : "ribeyes"}
               onPick={(t) => setA({ ...a, rib: { ...a.rib, thickness: t } })} />
             <div style={{ marginTop: "var(--space-md)" }}>
-              <div className="tag" style={{ color: "var(--mute)", marginBottom: "var(--space-sm)" }}>Steaks per package</div>
+              <div className="tag" style={{ color: "var(--muted)", marginBottom: "var(--space-sm)" }}>Steaks per package</div>
               <Chips opts={PER_PACKAGE_OPTIONS} value={a.rib.perPackage} onPick={(v) => setA({ ...a, rib: { ...a.rib, perPackage: v } })} />
             </div>
           </>
@@ -501,7 +501,7 @@ export default function Order() {
           <p className="chip-note">Plus roughly <b>{fmtRange(fi)} filet mignon</b> at 1 1/2" from the freed tenderloin.</p>
         )}
         <div style={{ marginTop: "var(--space-md)" }}>
-          <div className="tag" style={{ color: "var(--mute)", marginBottom: "var(--space-sm)" }}>Steaks per package</div>
+          <div className="tag" style={{ color: "var(--muted)", marginBottom: "var(--space-sm)" }}>Steaks per package</div>
           <Chips opts={PER_PACKAGE_OPTIONS} value={a.loin.perPackage} onPick={(v) => setA({ ...a, loin: { ...a.loin, perPackage: v } })} />
         </div>
       </>
@@ -529,7 +529,7 @@ export default function Order() {
         </div>
         {ans.mode === "roast" && (
           <>
-            <div className="tag" style={{ color: "var(--mute)", margin: "var(--space-sm) 0" }}>Roast size</div>
+            <div className="tag" style={{ color: "var(--muted)", margin: "var(--space-sm) 0" }}>Roast size</div>
             <Chips opts={ROAST_SIZE_OPTIONS} value={ans.roastSize} onPick={(v) => setMain({ roastSize: v })} />
             {rc && <p className="chip-note">Roughly <b>{fmtRange(rc)} roasts</b> in your {SHARES[share!].label.toLowerCase()}.</p>}
           </>
@@ -538,7 +538,7 @@ export default function Order() {
           <>
             <ThicknessPicker value={ans.thickness} count={c} what={`${cut.name.toLowerCase()} steaks`} onPick={(v) => setMain({ thickness: v })} />
             <div style={{ marginTop: "var(--space-md)" }}>
-              <div className="tag" style={{ color: "var(--mute)", marginBottom: "var(--space-sm)" }}>Steaks per package</div>
+              <div className="tag" style={{ color: "var(--muted)", marginBottom: "var(--space-sm)" }}>Steaks per package</div>
               <Chips opts={PER_PACKAGE_OPTIONS} value={ans.perPackage} onPick={(v) => setMain({ perPackage: v })} />
             </div>
           </>
@@ -601,9 +601,9 @@ export default function Order() {
             </button>
           ))}
         </div>
-        <div className="patty-row" style={{ borderTopColor: "var(--line)" }}>
+        <div className="patty-row" style={{ borderTopColor: "var(--rule)" }}>
           <label>
-            <input type="checkbox" checked={a.patties} onChange={(e) => setA({ ...a, patties: e.target.checked })} style={{ accentColor: "var(--rust)" }} />
+            <input type="checkbox" checked={a.patties} onChange={(e) => setA({ ...a, patties: e.target.checked })} style={{ accentColor: "var(--navy)" }} />
             <span>
               <b>Press some into patties</b>
               <span className="mute" style={{ display: "block", marginTop: 2, fontSize: "0.85rem" }}>{PATTY_NOTE}</span>
@@ -611,7 +611,7 @@ export default function Order() {
           </label>
           {a.patties && (
             <div style={{ marginLeft: 28, marginTop: "var(--space-md)" }}>
-              <div className="tag" style={{ color: "var(--mute)", marginBottom: "var(--space-sm)" }}>Patty size</div>
+              <div className="tag" style={{ color: "var(--muted)", marginBottom: "var(--space-sm)" }}>Patty size</div>
               <div className="chips">
                 {PATTY_SIZES.map((sz) => (
                   <button key={sz.id} className={"chip" + (a.pattySize === sz.id ? " on" : "")} onClick={() => setA({ ...a, pattySize: sz.id })}>
@@ -621,7 +621,7 @@ export default function Order() {
               </div>
               <p className="chip-note">{PATTY_SIZES.find((sz) => sz.id === a.pattySize)?.note}</p>
 
-              <div className="tag" style={{ color: "var(--mute)", margin: "var(--space-md) 0 var(--space-sm)" }}>How much goes to patties</div>
+              <div className="tag" style={{ color: "var(--muted)", margin: "var(--space-md) 0 var(--space-sm)" }}>How much goes to patties</div>
               <Chips opts={PATTY_LB_OPTIONS} value={a.pattyLbs} onPick={(v) => setA({ ...a, pattyLbs: v })} />
               {loose && (
                 <p className="chip-note">
@@ -700,7 +700,7 @@ export default function Order() {
   return (
     <main className="page order-main" style={{ maxWidth: 860 }}>
       <div className="wizard-top">
-        <span className="tag" style={{ color: "var(--rust)" }}>Your cut sheet · question {progress}</span>
+        <span className="tag" style={{ color: "var(--navy)" }}>Your cut sheet · question {progress}</span>
         <div className="wizard-bar"><div style={{ width: `${((q + 1) / QUESTIONS.length) * 100}%` }} /></div>
       </div>
 

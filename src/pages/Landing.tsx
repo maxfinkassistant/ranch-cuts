@@ -67,7 +67,7 @@ export default function Landing() {
             <div className="listing-photo" style={{ backgroundImage: `url(${ASSET("angus-steer.jpg")})` }} />
             <div className="listing-body">
               <div className="listing-tag"><span className="tag">Open now</span></div>
-              <div className="listing-name d">Ranch Cuts {LIVE.city}</div>
+              <div className="listing-name"><img src={ASSET("brand/ranchcuts-horizontal-cream.svg")} alt="Ranch Cuts" width={438} height={106} /><span className="city">{LIVE.city}</span></div>
               <p className="listing-lockup">Beef from <b>{LIVE.ranch.name}</b>, cut at <b>{LIVE.butcher.name}</b>.</p>
               <dl className="listing-facts">
                 <div><dt>Harvest</dt><dd>{season.label}</dd></div>
@@ -293,7 +293,7 @@ export default function Landing() {
       <section className="page">
         <div className="wide closing">
           <div className="closing-main">
-            <RcMark width={120} body="var(--on-dark)" cuts="var(--pasture)" />
+            <RcMark width={120} color="var(--on-navy)" />
             <h2 className="d">Find the ranch closest to you.</h2>
             <ZipSearch dark id="zip-bottom" />
           </div>

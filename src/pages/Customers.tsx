@@ -117,7 +117,7 @@ function SteerRow({
       <td>
         <input className="admin-input mono" value={d.id} placeholder={steer ? "" : "Tag or ID"}
           aria-label={`ID for ${label}`} onChange={(e) => setD({ ...d, id: e.target.value })} />
-        {clash && <span className="admin-sub" style={{ color: "var(--rust)" }}>Already used</span>}
+        {clash && <span className="admin-sub" style={{ color: "var(--navy)" }}>Already used</span>}
       </td>
       <td>
         <select className="admin-select" value={d.season} aria-label={`Harvest for ${label}`}
@@ -135,9 +135,9 @@ function SteerRow({
           value={d.discount} placeholder="0" aria-label={`Animal discount in dollars for ${label}`}
           onChange={(e) => setD({ ...d, discount: e.target.value })} />
         {discountBad
-          ? <span className="admin-sub" style={{ color: "var(--rust)" }}>0 to {money(SHARES.whole.animal - 1)}</span>
+          ? <span className="admin-sub" style={{ color: "var(--navy)" }}>0 to {money(SHARES.whole.animal - 1)}</span>
           : discount
-            ? <span className="admin-sub" style={{ color: "var(--sage)" }}>
+            ? <span className="admin-sub" style={{ color: "var(--slate)" }}>
                 {money(Math.round(discount / 2))} off a half, {money(Math.round(discount / 4))} off a quarter
               </span>
             : <span className="admin-sub">Blank = none</span>}
@@ -199,7 +199,7 @@ function SettingsForm({
 
   return (
     <div className="steer-settings-form">
-      <span className="tag" style={{ color: "var(--rust)" }}>Steer tracker</span>
+      <span className="tag" style={{ color: "var(--navy)" }}>Steer tracker</span>
       <div className="pair">
         <div className="field">
           <label htmlFor="ss-cap">Steers this {season}</label>
@@ -342,7 +342,7 @@ export default function Customers() {
   if (!authed) {
     return (
       <main className="page confirm-wrap" style={{ maxWidth: 420 }}>
-        <div className="tag" style={{ color: "var(--rust)", marginBottom: "var(--space-md)" }}>Ranch office: {LISTING_NAME}</div>
+        <div className="tag" style={{ color: "var(--navy)", marginBottom: "var(--space-md)" }}>Ranch office: {LISTING_NAME}</div>
         <h2 className="d">Ranch hands only.</h2>
         <form
           className="decision"
@@ -353,8 +353,8 @@ export default function Customers() {
             <label htmlFor="pc">Passcode</label>
             <input id="pc" type="password" value={code} onChange={(e) => { setCode(e.target.value); setBad(false); setUnreachable(false); }} autoFocus />
           </div>
-          {bad && <p className="small" style={{ color: "var(--rust)" }}>That's not it. Ask Max or Josh.</p>}
-          {unreachable && <p className="small" style={{ color: "var(--rust)" }}>Couldn't reach the order system. Give it a minute and try again.</p>}
+          {bad && <p className="small" style={{ color: "var(--navy)" }}>That's not it. Ask Max or Josh.</p>}
+          {unreachable && <p className="small" style={{ color: "var(--navy)" }}>Couldn't reach the order system. Give it a minute and try again.</p>}
           <button className="btn btn-solid btn-wide" type="submit" disabled={checking}>
             {checking ? "Checking…" : "Open the books"}
           </button>
@@ -391,7 +391,7 @@ export default function Customers() {
     <main className="page order-main" style={{ maxWidth: 1100 }}>
       <div className="admin-bar">
         <div>
-          <div className="tag" style={{ color: "var(--rust)" }}>
+          <div className="tag" style={{ color: "var(--navy)" }}>
             {SEASONS[CURRENT_SEASON].label}. Beef from {LIVE.ranch.name}, cut at {LIVE.butcher.name}
           </div>
           <h2 className="d" style={{ fontSize: "2rem" }}>Ranch office: {LISTING_NAME}</h2>
@@ -402,7 +402,7 @@ export default function Customers() {
             {live && !remote && !loadError && " Loading from the order sheet…"}
             {!live && " Local demo mode."}
           </p>
-          {loadError && <p className="small" style={{ color: "var(--rust)" }}>Order system: {loadError}</p>}
+          {loadError && <p className="small" style={{ color: "var(--navy)" }}>Order system: {loadError}</p>}
         </div>
         <div className="admin-actions">
           <button className="btn btn-ghost" onClick={() => setTick((x) => x + 1)}>Refresh</button>

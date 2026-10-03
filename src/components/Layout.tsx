@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { NavLink, Link, Outlet, useLocation } from "react-router-dom";
-import { SEASONS, CURRENT_SEASON, NEXT_SEASON, SUPPORT } from "../data/config";
+import { SEASONS, CURRENT_SEASON, NEXT_SEASON, SUPPORT, ASSET } from "../data/config";
 import { LIVE, PLANNED } from "../data/partnerships";
 import { useAvailability, seasonFull } from "../lib/availability";
-import RcMark from "./RcMark";
 
 export default function Layout() {
   const a = useAvailability();
@@ -27,8 +26,7 @@ export default function Layout() {
       </div>
       <header className="site-header">
         <Link to="/" className="brand" aria-label="Ranch Cuts home">
-          <RcMark width={54} />
-          <span className="brand-name">Ranch Cuts</span>
+          <img className="brand-logo" src={ASSET("brand/ranchcuts-horizontal-navy.svg")} alt="Ranch Cuts" width={438} height={106} />
         </Link>
         <button className="nav-toggle" aria-expanded={menu} aria-controls="site-nav" onClick={() => setMenu((m) => !m)}>
           <span className="sr-only">Menu</span>
@@ -47,9 +45,8 @@ export default function Layout() {
 
       <footer className="site-footer">
         <div className="footer-brand">
-          <RcMark width={64} body="var(--on-dark)" cuts="var(--pasture)" />
           <div>
-            <div className="footer-word">Ranch Cuts</div>
+            <img className="footer-logo" src={ASSET("brand/ranchcuts-horizontal-cream.svg")} alt="Ranch Cuts" width={438} height={106} />
             <p>Your local ranch. Your local butcher. Your cuts.</p>
           </div>
         </div>

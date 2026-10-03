@@ -114,7 +114,7 @@ export default function MapPage() {
             {live && (
               <div className="panel-card live">
                 <span className="tag">Open now</span>
-                <h2 className="d">Ranch Cuts {live.city}</h2>
+                <h2 className="d">Ranch Cuts <span className="city">{live.city}</span></h2>
                 <p className="panel-lockup">Beef from {live.ranch.name}, cut at {live.butcher.name}.</p>
                 <div className="panel-pair">
                   <div>
@@ -130,8 +130,8 @@ export default function MapPage() {
                 </div>
                 <p className="small mute">Serves {live.serves.join(", ")}. {SEASONS[CURRENT_SEASON].label} harvest. Shares from {money(SHARES.quarter.total)}.</p>
                 <div className="hero-actions" style={{ marginTop: "var(--space-md)" }}>
-                  <Link to={`/local/${live.slug}`} className="btn btn-solid">Meet them</Link>
-                  <Link to="/order" className="btn btn-ghost">Reserve a share</Link>
+                  <Link to={`/local/${live.slug}`} className="btn btn-on-dark">Meet them</Link>
+                  <Link to="/order" className="btn btn-ghost on-navy">Reserve a share</Link>
                 </div>
               </div>
             )}
@@ -139,7 +139,7 @@ export default function MapPage() {
             {planned && (
               <div className="panel-card">
                 <span className="tag">Planned, not open yet</span>
-                <h2 className="d">Ranch Cuts {planned.city}</h2>
+                <h2 className="d">Ranch Cuts <span className="city">{planned.city}</span></h2>
                 <p className="small">
                   {planned.butchersNearby} butchers that process beef are within about an hour of {planned.city}. No
                   ranch or butcher is signed yet. {planned.states.length > 1 ? `Because the metro crosses a state line, it will get a ranch and butcher on each side (${planned.states.join(" and ")}).` : ""}

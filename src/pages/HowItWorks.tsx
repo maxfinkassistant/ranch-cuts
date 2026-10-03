@@ -119,7 +119,7 @@ export default function HowItWorks() {
               <div className="tl-step done" key={s.t} style={{ gridTemplateColumns: "36px 1fr" }}>
                 <div className="tl-marker">
                   <div className="step-tag small-tag">{i + 1}</div>
-                  {i < STEPS.length - 1 && <div className="tl-line" style={{ background: "var(--line-strong)" }} />}
+                  {i < STEPS.length - 1 && <div className="tl-line" style={{ background: "var(--rule-strong)" }} />}
                 </div>
                 <div className="tl-body" style={{ paddingBottom: "var(--space-xl)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", gap: "var(--space-md)", alignItems: "baseline", flexWrap: "wrap" }}>
@@ -220,7 +220,7 @@ export default function HowItWorks() {
       <section className="page section dark-section">
         <div className="wide">
           <div className="section-head">
-            <span className="tag" style={{ color: "var(--tag)" }}>The Ranch Cuts share standard</span>
+            <span className="tag" style={{ color: "var(--muted-on-navy)" }}>The Ranch Cuts share standard</span>
             <h2 className="d" style={{ marginTop: "var(--space-sm)" }}>The same rules in every partnership</h2>
             <p>Buying a share of a live animal is an old, legal way to get beef straight from a ranch. These rules keep it that way, wherever you live.</p>
           </div>

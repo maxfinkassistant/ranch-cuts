@@ -164,8 +164,8 @@ async function addSpecialRequestsPage(doc: PDFDocument, order: Order) {
   const page = doc.addPage([612, 792]);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
   const body = await doc.embedFont(StandardFonts.Helvetica);
-  const ink = rgb(0.13, 0.11, 0.09);
-  const mute = rgb(0.42, 0.39, 0.36);
+  const ink = rgb(0x16 / 255, 0x26 / 255, 0x3d / 255); // brand navy #16263D
+  const mute = rgb(0x5b / 255, 0x66 / 255, 0x76 / 255); // brand muted #5B6676
   let y = 730;
 
   page.drawText("SPECIAL REQUESTS", { x: 54, y, size: 16, font: bold, color: ink });

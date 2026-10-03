@@ -57,10 +57,10 @@ export const REGIONS: Record<string, Region> = {
 
 const SHANK2 = "690,348 782,348 782,450 690,450";
 
-const FILL = "var(--paper-2)";
-const LINE = "var(--line-strong)";
-const HOT = "var(--rust)";
-const MUTE = "var(--mute)";
+const FILL = "var(--cream-2)";
+const LINE = "var(--rule-strong)";
+const HOT = "var(--navy)";
+const MUTE = "var(--muted)";
 
 export default function Cow({
   active,
@@ -82,8 +82,8 @@ export default function Cow({
       {/* tail, horns + ear behind the body */}
       <path d={STEER_TAIL} fill="none" stroke={LINE} strokeWidth="7" strokeLinecap="round" />
       <ellipse cx="799" cy="394" rx="9" ry="16" fill={LINE} />
-      <path d={STEER_HORN} fill="var(--card)" stroke={LINE} strokeWidth="1.5" />
-      <path d={STEER_HORN2} fill="var(--card)" stroke={LINE} strokeWidth="1.5" />
+      <path d={STEER_HORN} fill="var(--paper)" stroke={LINE} strokeWidth="1.5" />
+      <path d={STEER_HORN2} fill="var(--paper)" stroke={LINE} strokeWidth="1.5" />
       <path d={STEER_EAR} fill={FILL} stroke={LINE} strokeWidth="1.5" />
 
       {/* body base (head, neck, hooves show through) */}
@@ -105,7 +105,7 @@ export default function Cow({
               key={k}
               points={r.pts}
               fill={on ? HOT : FILL}
-              stroke="var(--card)"
+              stroke="var(--paper)"
               strokeWidth="2.5"
               opacity={on ? 0.94 : 1}
               onClick={() => onPick?.(k)}
@@ -129,7 +129,7 @@ export default function Cow({
           x={r.cx} y={r.cy} textAnchor="middle"
           fontFamily="var(--font-mono)" fontSize={r.fs ?? 11} fontWeight="600"
           letterSpacing={r.fs && r.fs < 10 ? "0.04em" : "0.08em"}
-          fill={active === k ? "oklch(97% 0.01 60)" : MUTE}
+          fill={active === k ? "var(--on-navy)" : MUTE}
           style={{ pointerEvents: "none", textTransform: "uppercase" }}
         >
           {r.name}
@@ -139,7 +139,7 @@ export default function Cow({
         x="736" y="416" textAnchor="middle"
         fontFamily="var(--font-mono)" fontSize="8" fontWeight="600"
         letterSpacing="0.04em"
-        fill={active === "shank" ? "oklch(97% 0.01 60)" : MUTE}
+        fill={active === "shank" ? "var(--on-navy)" : MUTE}
         style={{ pointerEvents: "none", textTransform: "uppercase" }}
       >
         Shank

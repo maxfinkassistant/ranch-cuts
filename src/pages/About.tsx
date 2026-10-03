@@ -32,7 +32,7 @@ export default function About() {
       <section className="page section dark-section">
         <div className="wide gap-grid">
           <div>
-            <span className="tag" style={{ color: "var(--tag)" }}>Why we started</span>
+            <span className="tag" style={{ color: "var(--muted-on-navy)" }}>Why we started</span>
             <h2 className="d" style={{ marginTop: "var(--space-sm)" }}>The same steer is worth twice as much at the store as it is at the sale barn.</h2>
             <p style={{ marginTop: "var(--space-md)" }}>
               When a rancher sells a finished steer at the sale barn, it brings about ${SALE_BARN.toLocaleString()}. By the time its
@@ -91,7 +91,7 @@ export default function About() {
           <div className="first-photo" style={{ backgroundImage: `url(${ASSET("angus-steer.jpg")})` }} role="img" aria-label="An Angus steer" />
           <div>
             <span className="tag eyebrow">Where it started</span>
-            <h2 className="d">Ranch Cuts {LIVE.city}</h2>
+            <h2 className="d">Ranch Cuts <span className="city">{LIVE.city}</span></h2>
             <p style={{ marginTop: "var(--space-md)" }}>
               Our first partnership is {LIVE.ranch.name}, which raises Angus cattle on pasture in {lowerFirst(LIVE.ranch.region)} and
               grain-finishes them on its own Colorado pens, and {LIVE.butcher.name}, a butcher in {LIVE.butcher.city}. The ranch keeps
@@ -140,7 +140,7 @@ export default function About() {
       <section id="partner" className="page section">
         <div className="wide partner-panel">
           <div>
-            <RcMark width={96} body="var(--on-dark)" cuts="var(--pasture)" />
+            <RcMark width={96} color="var(--on-navy)" />
             <h2 className="d">Ranchers and butchers: let's work together.</h2>
             <p>
               We're looking for ranch and butcher partners in {PLANNED.slice(0, 6).map((m) => m.city).join(", ")} and {PLANNED.length - 6} more metros
