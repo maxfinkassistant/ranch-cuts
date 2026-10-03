@@ -1,4 +1,4 @@
-/* How much of the current season is spoken for — the number behind
+/* How much of the current season is spoken for: the number behind
    the "3 of 7 steers reserved" tracker. Comes from the order system
    when there is one, from this browser's demo data when there isn't.
    One fetch is shared by every component that asks. */
@@ -11,7 +11,7 @@ import { listOrders, getSettings, reservedSteers } from "./store";
 export interface Availability {
   capacity: number;   // steers this season
   reserved: number;   // steers' worth already reserved
-  /** False until the order system has answered — show the season, not a count. */
+  /** False until the order system has answered: show the season, not a count. */
   known: boolean;
 }
 
@@ -34,7 +34,7 @@ function load(): Promise<Availability> {
   return pending;
 }
 
-/** Drop the cached answer — call after anything that changes the count. */
+/** Drop the cached answer. Call after anything that changes the count. */
 export function refreshAvailability() {
   cached = null;
   pending = null;

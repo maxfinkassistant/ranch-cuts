@@ -3,7 +3,7 @@
 
    Base photo: public-domain Aberdeen Angus conformation photo
    (DPLA / Wikimedia Commons), warm-toned to the brand palette.
-   Lives in /public — swap for a ranch photo when available.    */
+   Lives in /public. Swap for a ranch photo when available.     */
 
 import { ASSET } from "../data/config";
 

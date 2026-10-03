@@ -1,6 +1,6 @@
 /* Thin client for the Apps Script backend (apps-script/Code.gs).
    Requests are kept "simple" (no custom headers, text body) so the
-   browser skips CORS preflight — Apps Script web apps don't answer
+   browser skips CORS preflight: Apps Script web apps don't answer
    OPTIONS. Every call degrades gracefully when BACKEND_URL is unset. */
 
 import { BACKEND_URL } from "../data/config";
@@ -11,9 +11,49 @@ export const backendConfigured = () => BACKEND_URL.length > 0;
 
 export interface OrderPayload {
   order: Order;
+  partnership: string;    // Partnership.slug, also on order.partnership
   summary: { name: string; detail: string }[];
-  cost: { total: number; deposit: number; balance: number };
+  /** Two charges, two sellers: animal (fixed, to the ranch) and
+      processing (estimate, billed by the butcher). The backend
+      recomputes these from the share; they ride along for the record. */
+  cost: { total: number; animal: number; processing: number; deposit: number; animalBalance: number; balance: number };
   depositLink: string;
+}
+
+/* ---------------- waitlist ----------------
+   Zip searches outside a live partnership leave an email here. With
+   a backend it lands on the "Waitlist" sheet; without one (demo mode)
+   it is kept in this browser under "rc.waitlist". */
+
+export interface WaitlistEntry {
+  email: string;
+  zip: string;
+  place?: string;
+  state?: string;
+  nearest?: string;
+}
+
+const WAITLIST_KEY = "rc.waitlist";
+
+export async function submitWaitlist(e: WaitlistEntry): Promise<{ ok: boolean; error?: string }> {
+  const entry = { ...e, email: e.email.trim(), zip: e.zip.trim(), createdAt: new Date().toISOString() };
+  if (!/^\S+@\S+\.\S+$/.test(entry.email)) return { ok: false, error: "Please enter a valid email." };
+  if (backendConfigured()) {
+    try {
+      await call<{ ok: true }>(BACKEND_URL, { method: "POST", body: JSON.stringify({ action: "waitlist", ...entry }) });
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, error: (err as Error).message || "Could not reach the waitlist. Please try again." };
+    }
+  }
+  try {
+    const rows = JSON.parse(localStorage.getItem(WAITLIST_KEY) || "[]") as unknown[];
+    rows.push(entry);
+    localStorage.setItem(WAITLIST_KEY, JSON.stringify(rows));
+  } catch {
+    /* storage blocked (private window): demo mode still says yes */
+  }
+  return { ok: true };
 }
 
 async function call<T>(url: string, init?: RequestInit): Promise<T> {
@@ -25,17 +65,17 @@ async function call<T>(url: string, init?: RequestInit): Promise<T> {
   return json as T;
 }
 
-/** `season` comes back once the backend knows about seasons — it
-    decides fall vs. winter from what's actually left. */
+/** `season` comes back from the backend: it decides this harvest
+    vs. the next from what's actually left. */
 export async function submitOrder(payload: OrderPayload): Promise<{ ok: true; code: string; season?: SeasonId }> {
   return call(BACKEND_URL, { method: "POST", body: JSON.stringify({ action: "order", ...payload }) });
 }
 
 /** What the customer's own tracking page is allowed to know about the
-    animal behind their order — their numbers only, never the roster. */
+    animal behind their order: their numbers only, never the roster. */
 export interface PublicPricing {
   hangingWeight: number;
-  rate: number;
+  discount?: number;      // ranch discount on the steer, $ off a whole steer
   readyDate?: string;
 }
 
@@ -94,7 +134,7 @@ export const pushSettings = (adminKey: string, settings: SeasonSettings) =>
   admin(adminKey, { action: "settings", ...settings });
 
 /** Email one customer their final invoice. The backend recomputes the
-    money from the sheet — the browser never dictates what to bill. */
+    money from the sheet: the browser never dictates what to bill. */
 export const sendInvoice = (adminKey: string, code: string) =>
   admin(adminKey, { action: "invoice", code });
 

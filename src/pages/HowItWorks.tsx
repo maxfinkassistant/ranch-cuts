@@ -1,50 +1,63 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import SteerMap from "../components/SteerMap";
-import ColoradoMap from "../components/ColoradoMap";
+import ZipSearch from "../components/ZipSearch";
+import { LIVE } from "../data/partnerships";
 import {
-  SHARES, DEPOSIT, HANGING_RATE, TAKEHOME_RATE_EST,
-  SEASONS, CURRENT_SEASON, NEXT_SEASON, STORAGE_NOTE,
-  PROCESSOR, PAYABLE_TO, RANCH_CONTACT,
-  PRIMALS, savingsFor, money, money2, type ShareId,
+  SHARES, DEPOSIT, SEASONS, CURRENT_SEASON, PRIMALS, money, money2, type ShareId,
 } from "../data/config";
 
 const SEASON = SEASONS[CURRENT_SEASON];
-const NEXT = SEASONS[NEXT_SEASON];
 
 const STEPS = [
   {
     when: "Today",
-    t: "Reserve your share",
-    b: `Pick a quarter, half, or whole. A ${money(DEPOSIT)} deposit holds your beef — same deposit for every size, and it applies to your total. We harvest a set number of steers each season; once this ${SEASON.name}'s are reserved, new orders are placed in our ${NEXT.name} harvest (pickup ${NEXT.pickupText}).`,
+    t: "Find your partnership",
+    b: "Enter your zip code. We match you with the partner ranch and partner butcher nearest you, always in your own state. You'll see who they are, where pickup is, and what a share costs there before you commit to anything.",
+  },
+  {
+    when: "Today",
+    t: "Reserve a share of one steer",
+    b: `Pick a quarter, half or whole. You're buying an undivided share of one specific, ear-tagged steer from the ranch, by bill of sale. A ${money(DEPOSIT)} deposit holds it and counts toward the price. Up to four households can share one steer.`,
   },
   {
     when: "Before harvest",
     t: "Build your cut sheet",
-    b: "A guided walk-through asks one question at a time — steak thickness, roast sizes, ground beef ratio — with plain-English explanations of every cut. We fill out the butcher's official cutting form from your answers. Your beef, your way.",
+    b: "A guided walk-through asks one question at a time: steak thickness, roast sizes, ground beef packages, which cuts to keep and which to grind. Every option is explained in plain English. We fill out the butcher's own cutting form in your name.",
   },
   {
-    when: `This ${SEASON.name}`,
-    t: "Harvest",
-    b: `Your animal is processed at ${PROCESSOR.name} in Kersey — a Colorado butcher, twenty minutes up the road from the ranch.`,
+    when: "Harvest window",
+    t: "Harvest, once every share is sold",
+    b: "Your steer goes to the butcher only after all of its shares are sold. If one isn't spoken for in time, it waits for the next harvest window. Nobody ends up owning a share of a steer that's already been harvested.",
   },
   {
-    when: "14 days",
-    t: "The 14-day hang",
-    b: "Your beef dry-ages for two weeks — the old-fashioned tenderizing step most store beef never gets. Then it's cut to your sheet, vacuum-sealed, and labeled.",
+    when: "About 14 days",
+    t: "The hang",
+    b: "Your beef dry-ages on the rail for about two weeks, the tenderizing step most store beef never gets. Then it's cut to your sheet, vacuum sealed, labeled with your name and frozen.",
   },
   {
     when: SEASON.pickup,
-    t: "Pick up in Kersey",
-    b: `Collect your beef at Colorado Custom — frozen, vacuum-sealed, boxed and ready to load. Your balance is due to ${PAYABLE_TO} — you pay on your animal's actual hanging weight, so the number is real, not an estimate. ${STORAGE_NOTE}`,
+    t: "Pick up at the butcher",
+    b: "We tell you the day it's ready. Your boxes are labeled Not For Sale with your name on them: this is your beef, processed for you. Pay the balance to the ranch and the processing to the butcher, then load up.",
   },
+];
+
+const RULES = [
+  ["One steer, identified", "Every share is a share of one ear-tagged animal. Not a blend, not a box of assorted beef."],
+  ["Sold before harvest", "All shares are sold before the steer is harvested. Unsold steers wait for the next window."],
+  ["Priced on the animal", "Your share of the steer has a fixed price. Hanging weight is only used to estimate, and for the butcher's processing bill."],
+  ["Two sellers, two lines", "The ranch sells you the share. The butcher bills you for processing. You see both, every time."],
+  ["Same state, start to finish", "The ranch, the butcher and your pickup are always in the same state."],
+  ["Four owners at most", "A steer is sold as one whole, two halves or four quarters. Never smaller."],
+  ["Ranch Cuts never owns your beef", "We run the website, the cut sheet and the booking. We never own the cattle or the beef and never hold it."],
+  ["Brand inspected where required", "In states with brand inspection, the certificate is recorded for the steer before the first share is sold."],
 ];
 
 export default function HowItWorks() {
   const [active, setActive] = useState<string | null>("chuck");
   const [share, setShare] = useState<ShareId>("half");
+  const half = SHARES.half;
 
-  /* tapping the steer lights the card up and, on a phone, brings it into view */
   const pick = (id: string) => {
     setActive(id);
     if (window.matchMedia("(max-width: 980px)").matches) {
@@ -57,26 +70,55 @@ export default function HowItWorks() {
       {/* intro */}
       <section className="page section" style={{ paddingBottom: "var(--space-xl)" }}>
         <div className="wide">
-          <div className="tag" style={{ color: "var(--rust)", marginBottom: "var(--space-md)" }}>How it works</div>
-          <h1 className="d" style={{ fontSize: "clamp(2.2rem,5vw,3.6rem)", maxWidth: "20ch" }}>
-            Get to know your beef. From ranch to table.
-          </h1>
-          <p className="lede" style={{ marginTop: "var(--space-lg)" }}>
-            One Angus animal, raised in Colorado and cut exactly the way you ask —
-            at {money2(HANGING_RATE)}/lb hanging weight, about {money2(TAKEHOME_RATE_EST)}/lb
-            in your freezer. Here's the whole process, start to finish.
+          <span className="tag eyebrow">How it works</span>
+          <h1 className="d" style={{ maxWidth: "16ch" }}>One steer. Two local businesses. Your cut sheet.</h1>
+          <p className="lede" style={{ marginTop: "var(--space-lg)", maxWidth: "40rem" }}>
+            Buying a share of a steer used to mean knowing a rancher, finding a butcher with an open slot, and filling out a cutting
+            form full of words nobody explains. Ranch Cuts puts all of that in one place. Here's the whole thing, start to finish.
           </p>
         </div>
       </section>
 
-      {/* the 5 steps */}
+      {/* who does what */}
       <section className="page section section-tint">
-        <div className="wide" style={{ maxWidth: 780 }}>
-          <div style={{ display: "grid", gap: 0 }}>
+        <div className="wide">
+          <div className="section-head">
+            <h2 className="d">Who does what</h2>
+            <p>Every partnership is one ranch and one butcher who work together. In Denver, that's {LIVE.ranch.name} and {LIVE.butcher.name}.</p>
+          </div>
+          <div className="roles">
+            <div className="role role-ranch">
+              <span className="tag">The partner ranch</span>
+              <h3 className="d">Raises the steer and sells you your share</h3>
+              <p>Sets the price, tags the animal, signs your bill of sale. The ranch is the seller of record on every share, and the person to call about the cattle.</p>
+            </div>
+            <div className="role role-butcher">
+              <span className="tag">The partner butcher</span>
+              <h3 className="d">Harvests, hangs and cuts it your way</h3>
+              <p>Commits harvest slots, cuts to each owner's sheet, packages and freezes, and bills each owner for processing. Pickup is at the butcher's shop.</p>
+            </div>
+            <div className="role role-rc">
+              <span className="tag">Ranch Cuts</span>
+              <h3 className="d">Brings it together</h3>
+              <p>The website, the zip code match, the cut sheet, payments to the ranch and butcher, the harvest calendar and the reminders. We never own the cattle or the beef.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* the steps */}
+      <section className="page section">
+        <div className="wide hiw-steps-grid">
+          <div className="hiw-steps-side">
+            <h2 className="d">Six steps, zip code to freezer</h2>
+            <p className="mute" style={{ marginTop: "var(--space-sm)" }}>Your part is a handful of decisions and one drive to the butcher. The ranch and the butcher handle the rest.</p>
+            <div style={{ marginTop: "var(--space-xl)" }}><ZipSearch size="small" id="hiw-zip" cta="Start with your zip" /></div>
+          </div>
+          <div>
             {STEPS.map((s, i) => (
-              <div className="tl-step done" key={s.t} style={{ gridTemplateColumns: "28px 1fr" }}>
+              <div className="tl-step done" key={s.t} style={{ gridTemplateColumns: "36px 1fr" }}>
                 <div className="tl-marker">
-                  <div className="tl-dot" style={{ background: "var(--rust)", borderColor: "var(--rust)" }} />
+                  <div className="step-tag small-tag">{i + 1}</div>
                   {i < STEPS.length - 1 && <div className="tl-line" style={{ background: "var(--line-strong)" }} />}
                 </div>
                 <div className="tl-body" style={{ paddingBottom: "var(--space-xl)" }}>
@@ -84,72 +126,53 @@ export default function HowItWorks() {
                     <h3 className="d" style={{ color: "var(--ink)" }}>{s.t}</h3>
                     <span className="tl-when">{s.when}</span>
                   </div>
-                  <p style={{ maxWidth: "58ch", color: "var(--ink-2)" }}>{s.b}</p>
+                  <p style={{ maxWidth: "60ch", color: "var(--ink-2)" }}>{s.b}</p>
                 </div>
               </div>
             ))}
           </div>
-          <div className="hero-actions" style={{ marginTop: 0 }}>
-            <Link to="/order" className="btn btn-solid btn-big">Order beef</Link>
-          </div>
         </div>
       </section>
 
-      {/* why this beats the grocery store */}
-      <section className="page section">
-        <div className="wide">
-          <div className="section-head">
-            <h2 className="d">Why this beats the grocery store</h2>
-            <p>Three reasons, and none of them require a spreadsheet.</p>
-          </div>
-          <div className="threes">
-            <div className="three">
-              <div className="num">01 · THE MONEY</div>
-              <h3 className="d">About {money(savingsFor("half").totals.saved)} back on a half</h3>
-              <p>
-                Roughly {money(savingsFor("quarter").totals.saved)} on a quarter
-                and {money(savingsFor("whole").totals.saved)} on a whole, measured against what the
-                same cuts cost on the shelf. One price — {money2(TAKEHOME_RATE_EST)}/lb take-home —
-                covers ribeyes and burger alike, with no processing fees tacked on at the end.
-              </p>
-            </div>
-            <div className="three">
-              <div className="num">02 · THE QUALITY</div>
-              <h3 className="d">One animal, dry-aged 14 days</h3>
-              <p>
-                Angus genetics, pasture-raised and grain-finished for marbling, typically grading
-                Choice or Prime. Store ground beef is a blend of dozens of animals; yours is one.
-                And it hangs two full weeks before it's cut — the tenderizing step supermarket
-                beef almost never gets.
-              </p>
-            </div>
-            <div className="three">
-              <div className="num">03 · THE SOURCE</div>
-              <h3 className="d">American beef, and you know the ranch</h3>
-              <p>
-                Born, raised, and harvested in Colorado, processed by a Colorado butcher twenty
-                minutes up the road. We keep ownership from conception to harvest — no sale
-                barns, no middlemen, no imported trim blended in. You can call Josh and ask
-                about your animal.
-              </p>
-            </div>
-          </div>
-          <div className="hero-actions">
-            <Link to="/order" className="btn btn-solid">Reserve a share</Link>
-            <Link to="/track/TR-SAMPLE1" className="btn btn-ghost">See a finished cut sheet</Link>
-          </div>
-        </div>
-      </section>
-
-      {/* what's in the box */}
+      {/* who you pay */}
       <section className="page section section-tint">
         <div className="wide">
           <div className="section-head">
-            <h2 className="d">What comes out of one animal</h2>
-            <p>
-              Nine sections, nine decisions on your cut sheet. Tap the steer or a card to see
-              what each one turns into — and switch the size to see your share.
-            </p>
+            <h2 className="d">Who you pay, with a half as the example</h2>
+            <p>Two charges, two sellers, both on your order from day one. One checkout collects them and sends each one where it belongs.</p>
+          </div>
+          <div className="pay-explainer">
+            <div className="pay-line">
+              <span className="tag">To {LIVE.ranch.name}</span>
+              <div className="d pay-num">{money(half.animal)}</div>
+              <p><b>Your half of the steer.</b> A fixed price, set by the ranch. Your {money(DEPOSIT)} deposit counts toward it.</p>
+            </div>
+            <div className="pay-plus" aria-hidden="true">+</div>
+            <div className="pay-line">
+              <span className="tag">To {LIVE.butcher.name}</span>
+              <div className="d pay-num">about {money(half.processing)}</div>
+              <p><b>Processing.</b> Harvest, hang, cut, wrap and freeze, at the butcher's posted rates on your steer's actual hanging weight.</p>
+            </div>
+            <div className="pay-plus" aria-hidden="true">=</div>
+            <div className="pay-line total">
+              <span className="tag">All in</span>
+              <div className="d pay-num">about {money(half.total)}</div>
+              <p>About {half.takehome} lb of beef in your freezer, roughly {money2(half.takehomeRate)} a pound for every cut.</p>
+            </div>
+          </div>
+          <p className="small mute" style={{ marginTop: "var(--space-lg)", maxWidth: "72ch" }}>
+            Ranch Cuts is paid a small share of each sale by the ranch and butcher. It's already inside these prices; there's no
+            separate fee to you. Prices shown are for Ranch Cuts {LIVE.city}. Each ranch sets its own.
+          </p>
+        </div>
+      </section>
+
+      {/* what comes out of one animal */}
+      <section className="page section">
+        <div className="wide">
+          <div className="section-head">
+            <h2 className="d">What comes out of one steer</h2>
+            <p>Nine sections, nine decisions on your cut sheet. Tap the steer or a card, and switch the size to see your share.</p>
           </div>
           <div className="primal-grid">
             <div className="primal-map">
@@ -163,7 +186,7 @@ export default function HowItWorks() {
                 <span className="tag">What's in a</span>
                 <div className="chips" role="group" aria-label="Share size">
                   {Object.values(SHARES).map((s) => (
-                    <button key={s.id} className={"chip" + (share === s.id ? " on" : "")} onClick={() => setShare(s.id)}>
+                    <button key={s.id} className={"chip" + (share === s.id ? " on" : "")} aria-pressed={share === s.id} onClick={() => setShare(s.id)}>
                       {s.label}
                     </button>
                   ))}
@@ -193,63 +216,32 @@ export default function HowItWorks() {
         </div>
       </section>
 
-      {/* logistics */}
-      <section className="page section">
-        <div className="wide dark-panel">
-          <div>
-            <span className="tag">Sizes &amp; freezer space</span>
-            <p>
-              Quarter: ~{SHARES.quarter.takehome} lb ({SHARES.quarter.freezer}) ·
-              Half: ~{SHARES.half.takehome} lb ({SHARES.half.freezer}) ·
-              Whole: ~{SHARES.whole.takehome} lb ({SHARES.whole.freezer}).
-            </p>
-            <p className="dim">{money(DEPOSIT)} deposit for any size, applied to your total.</p>
-          </div>
-          <div>
-            <span className="tag">Pickup &amp; payment</span>
-            <p>{PROCESSOR.name}, {PROCESSOR.address}. Deposit and balance paid to {PAYABLE_TO}.</p>
-            <p className="dim">Pickup only, {SEASON.pickupText}. {STORAGE_NOTE}</p>
-          </div>
-          <div>
-            <span className="tag">Questions?</span>
-            <p>Call or text {RANCH_CONTACT.name} — {RANCH_CONTACT.phone}.</p>
-            <p className="dim">Happy to talk cuts, freezer space, or which size fits your family.</p>
-          </div>
-        </div>
-      </section>
-
-      {/* where it all happens */}
-      <section className="page section section-tint">
+      {/* the standard */}
+      <section className="page section dark-section">
         <div className="wide">
           <div className="section-head">
-            <h2 className="d">Where it all happens</h2>
-            <p>
-              Ranch, butcher, and your freezer — all along the Front Range. Pickup is at
-              Colorado Custom in Kersey, about an hour up the road from the Denver area.
-            </p>
+            <span className="tag" style={{ color: "var(--tag)" }}>The Ranch Cuts share standard</span>
+            <h2 className="d" style={{ marginTop: "var(--space-sm)" }}>The same rules in every partnership</h2>
+            <p>Buying a share of a live animal is an old, legal way to get beef straight from a ranch. These rules keep it that way, wherever you live.</p>
           </div>
-          <div className="co-map-grid">
-            <ColoradoMap />
-            <ol className="co-legend">
-              <li>
-                <span className="co-legend-num">1</span>
-                <div>
-                  <b>Ranch to butcher.</b> Your steer goes from our pens in northeast Colorado to
-                  {" "}{PROCESSOR.name} in Kersey, where it hangs 14 days and is cut to your sheet.
-                </div>
+          <ol className="rules">
+            {RULES.map(([t, b], i) => (
+              <li key={t}>
+                <span className="rule-n">{String(i + 1).padStart(2, "0")}</span>
+                <div><b>{t}</b><p>{b}</p></div>
               </li>
-              <li>
-                <span className="co-legend-num">2</span>
-                <div>
-                  <b>You drive up.</b> When your beef is ready, head to {PROCESSOR.address}.
-                  Frozen, vacuum-sealed, labeled, and loaded.
-                </div>
-              </li>
-            </ol>
-          </div>
+            ))}
+          </ol>
         </div>
       </section>
 
+      {/* close */}
+      <section className="page section">
+        <div className="wide" style={{ display: "flex", gap: "var(--space-sm)", flexWrap: "wrap", alignItems: "center" }}>
+          <Link to="/find" className="btn btn-solid btn-big">Find your ranch</Link>
+          <Link to="/track/RC-SAMPLE1" className="btn btn-ghost btn-big">See a finished cut sheet</Link>
+        </div>
+      </section>
     </main>
   );
 }

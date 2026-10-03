@@ -62,7 +62,7 @@ export default function CutDialog({
           </div>
 
           <p className="small mute" style={{ marginTop: "var(--space-sm)" }}>
-            Estimates for a typical animal — your cut sheet decides the exact mix.
+            Estimates for a typical animal. Your cut sheet decides the exact mix.
           </p>
 
           <Link to="/order" className="btn btn-solid btn-wide" style={{ marginTop: "var(--space-md)" }}>

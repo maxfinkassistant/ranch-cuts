@@ -1,6 +1,6 @@
 /* Interactive beef primal diagram.
    A drawn steer silhouette with the primal regions clipped inside
-   it — regions stay simple polygons, the silhouette supplies the
+   it: regions stay simple polygons, the silhouette supplies the
    anatomy. Colors come from CSS custom properties. */
 
 import { useId } from "react";

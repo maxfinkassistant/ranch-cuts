@@ -1,144 +1,129 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import SteerMap from "../components/SteerMap";
-import CutDialog from "../components/CutDialog";
-import SteerTracker from "../components/SteerTracker";
+import ZipSearch from "../components/ZipSearch";
+import RcMark from "../components/RcMark";
+import { LIVE, PLANNED } from "../data/partnerships";
 import {
-  SHARES, DEPOSIT, HANGING_RATE, TAKEHOME_RATE_EST,
-  USDA_CHOICE, GROCERY_SOURCE, SEASONS, CURRENT_SEASON, NEXT_SEASON, STORAGE_NOTE,
-  PROCESSOR, PAYABLE_TO, RANCH_CONTACT,
-  LIVE_TYP, STORY, QUALITY, IMAGES, PRIMALS, balanceAtPickup,
+  SHARES, DEPOSIT, GROCERY_SOURCE, GROCERY_BASKET_PER_LB, SEASONS, CURRENT_SEASON, IMAGES, PRIMALS, ASSET,
   savingsFor, money, money2, moneySigned, type ShareId,
 } from "../data/config";
 
-const SAMPLE_CODE = "TR-SAMPLE1";
+const STEPS = [
+  { n: "1", t: "Enter your zip code", b: "We match you with the partner ranch and partner butcher closest to you, in your state." },
+  { n: "2", t: "Reserve a share", b: `A quarter, half or whole of one ear-tagged steer. ${money(DEPOSIT)} holds it.` },
+  { n: "3", t: "Build your cut sheet", b: "A guided walk-through, one plain-English question at a time. We fill in the butcher's form for you." },
+  { n: "4", t: "Pick it up", b: "Your steer hangs, gets cut to your sheet, and comes out frozen, sealed and boxed with your name on it." },
+];
+
+const FAQ = [
+  {
+    q: "How much freezer space do I need?",
+    a: `A quarter is about ${SHARES.quarter.takehome} lb of beef and needs ${SHARES.quarter.freezer} of freezer space. A half needs ${SHARES.half.freezer}, a whole ${SHARES.whole.freezer}.`,
+  },
+  {
+    q: "Who am I actually buying from?",
+    a: "The ranch. You buy a share of one live steer from the partner ranch, which is the seller on your bill of sale. The partner butcher bills you for processing. Ranch Cuts runs the website, the cut sheet and the booking, and never owns the cattle or the beef.",
+  },
+  {
+    q: "Can I split a steer with friends?",
+    a: "Yes. A steer can have up to four owners, so a whole is often two halves or four quarters. Each owner gets their own cut sheet and their own boxes.",
+  },
+  {
+    q: "Why can't you ship it to me?",
+    a: "Custom-cut beef belongs to you before it's harvested, and the rules that make that possible also mean it can't be shipped. Pickup is at the butcher. That's also why every partnership stays inside one state.",
+  },
+  {
+    q: "What if there isn't a partnership near me?",
+    a: "Join the list from the zip code search. We open where families ask, and we'll email you once, when yours opens.",
+  },
+];
 
 export default function Landing() {
-  const [active, setActive] = useState("chuck");
-  const [openPrimal, setOpenPrimal] = useState<string | null>(null);
   const [savingsShare, setSavingsShare] = useState<ShareId>("half");
-  const open = openPrimal ? PRIMALS.find((p) => p.id === openPrimal) ?? null : null;
   const sv = savingsFor(savingsShare);
   const season = SEASONS[CURRENT_SEASON];
-  const nextSeason = SEASONS[NEXT_SEASON];
+  const ribeye = sv.rows.find((r) => r.cut.id === "rib")!;
 
   return (
     <main>
       {/* hero */}
-      <section className="page hero wide">
-        <div className="hero-text">
-          <div className="hero-head rise">
-            <div className="tag hero-kicker">Colorado cattle · Colorado ranch · Colorado butcher</div>
-            <h1 className="d">Ranch to table.<br />One Angus at a&nbsp;time.</h1>
+      <section className="page rc-hero">
+        <div className="wide rc-hero-grid">
+          <div className="rc-hero-text rise">
+            <h1 className="d">Your local ranch.<br />Your local butcher.<br /><span className="hl">Your cuts.</span></h1>
+            <p className="lede">
+              Buy a quarter, half or whole steer from a ranch near you, cut exactly your way by a butcher near you. Steaks, roasts
+              and burger all at one price a pound, and you know who raised it.
+            </p>
+            <ZipSearch />
+            <p className="hero-fine">
+              <span>Open now in Denver</span>
+              <span>{PLANNED.length} more metros planned</span>
+              <span>Shares from {money(SHARES.quarter.total)}</span>
+            </p>
           </div>
-          <div className="hero-body rise">
-            <p className="lede">{STORY}</p>
-            <div className="hero-actions">
-              <Link to="/order" className="btn btn-solid btn-big">Order beef</Link>
-              <Link to="/how-it-works" className="btn btn-ghost btn-big">How it works</Link>
+
+          <Link to={`/local/${LIVE.slug}`} className="listing-card rise rise-1" aria-label={`Ranch Cuts ${LIVE.city}: see the partnership`}>
+            <div className="listing-photo" style={{ backgroundImage: `url(${ASSET("angus-steer.jpg")})` }} />
+            <div className="listing-body">
+              <div className="listing-tag"><span className="tag">Open now</span></div>
+              <div className="listing-name d">Ranch Cuts {LIVE.city}</div>
+              <p className="listing-lockup">Beef from <b>{LIVE.ranch.name}</b>, cut at <b>{LIVE.butcher.name}</b>.</p>
+              <dl className="listing-facts">
+                <div><dt>Harvest</dt><dd>{season.label}</dd></div>
+                <div><dt>Pickup</dt><dd>{LIVE.butcher.city}, CO</dd></div>
+                <div><dt>Whole</dt><dd>{money2(SHARES.whole.rate)}/lb</dd></div>
+              </dl>
+              <span className="listing-cta">Meet the ranch and the butcher</span>
             </div>
-            <div className="hero-fine">
-              <span>{money2(HANGING_RATE)}/LB HANGING WEIGHT</span>
-              <span>≈ {money2(TAKEHOME_RATE_EST)}/LB TAKE-HOME</span>
-              <span>{money(DEPOSIT)} DEPOSIT, ANY SIZE</span>
-            </div>
-          </div>
-        </div>
-        {/* on a phone the tracker sits right under the headline */}
-        <div className="hero-side">
-          <SteerTracker />
-          <div className="diagram-card rise rise-1">
-            <SteerMap active={active} onPick={(k) => { setActive(k); setOpenPrimal(k); }} />
-            <p className="diagram-hint">Tap a section to see what it yields in a quarter, half, or whole.</p>
-          </div>
+          </Link>
         </div>
       </section>
 
-      {/* what you take home, and what it costs */}
+      {/* four steps */}
       <section className="page section section-tint">
         <div className="wide">
           <div className="section-head">
-            <h2 className="d">What you take home, and what it costs</h2>
-            <p>
-              Forget live weight and hanging weight. Two numbers matter: the total you pay,
-              and the beef that goes in your freezer — cut, wrapped, and labeled.
-            </p>
+            <h2 className="d">How a share works</h2>
           </div>
-          <div className="takehome-grid">
-            {Object.values(SHARES).map((s) => (
-              <div className="takehome" key={s.id}>
-                <span className="tag">{s.label}</span>
-                <div className="takehome-pair">
-                  <div>
-                    <div className="d takehome-num takehome-cost">{money(s.total)}<sup>*</sup></div>
-                    <p className="small mute">total cost, everything included</p>
-                  </div>
-                  <div>
-                    <div className="d takehome-num">≈ {s.takehome} lb<sup>*</sup></div>
-                    <p className="small mute">of finished beef in your freezer</p>
-                  </div>
-                </div>
-                <div className="takehome-rate">
-                  ≈ {money2(TAKEHOME_RATE_EST)}/lb all in · fills {s.freezer} of freezer
-                </div>
-              </div>
+          <ol className="steps4">
+            {STEPS.map((s) => (
+              <li key={s.n}>
+                <span className="step-tag" aria-hidden="true">{s.n}</span>
+                <h3 className="d">{s.t}</h3>
+                <p>{s.b}</p>
+              </li>
             ))}
-          </div>
-          <p className="small mute" style={{ marginTop: "var(--space-md)", maxWidth: "75ch" }}>
-            <sup>*</sup>Close estimates from a typical {LIVE_TYP.toLocaleString()} lb animal — yours
-            may run somewhat above or below. You pay {money2(HANGING_RATE)}/lb on your animal's
-            actual hanging weight, so the final number is real. {money(DEPOSIT)} of the total is
-            your deposit; the rest is due at pickup.
-          </p>
+          </ol>
+          <p style={{ marginTop: "var(--space-xl)" }}><Link to="/how-it-works" className="btn btn-ghost">The whole process, step by step</Link></p>
         </div>
       </section>
 
-      {/* one price strip */}
-      <section className="page" style={{ paddingTop: "var(--space-2xl)", paddingBottom: "var(--space-2xl)" }}>
-        <div className="wide dark-panel">
+      {/* the steak story */}
+      <section className="page section">
+        <div className="wide steak-grid">
           <div>
-            <span className="tag">Your price, everything included</span>
-            <div className="d" style={{ fontSize: "clamp(2rem,3.5vw,2.8rem)", lineHeight: 1 }}>
-              ≈ {money2(TAKEHOME_RATE_EST)}/lb
-            </div>
-            <p className="dim">
-              Take-home estimate at {money2(HANGING_RATE)}/lb hanging weight. No processing
-              fees, no hidden costs.
+            <h2 className="d">Every cut costs the same per pound. Including the ribeye.</h2>
+            <p className="lede" style={{ marginTop: "var(--space-md)" }}>
+              At the store, ribeye runs {money2(ribeye.cut.retail)} a pound and burger {money2(sv.rows.find((r) => r.cut.id === "ground")!.cut.retail)}.
+              In a share, your ribeyes, filets, roasts and ground beef all land at about {money2(SHARES[savingsShare].takehomeRate)} a pound in
+              your freezer. Most of the savings is in the steaks.
+            </p>
+            <p className="small mute" style={{ marginTop: "var(--space-md)" }}>
+              Across a whole steer's worth of cuts, the same beef costs about {money2(GROCERY_BASKET_PER_LB)}/lb at {GROCERY_SOURCE.store}.
             </p>
           </div>
-          <div>
-            <span className="tag">The grocery store</span>
-            <div className="d" style={{ fontSize: "clamp(2rem,3.5vw,2.8rem)", lineHeight: 1 }}>
-              {money2(USDA_CHOICE)}/lb
+          <div className="big-compare" role="img" aria-label={`Ribeye: ${money2(ribeye.cut.retail)} a pound at ${GROCERY_SOURCE.store}, about ${money2(SHARES[savingsShare].takehomeRate)} in a Ranch Cuts ${SHARES[savingsShare].label.toLowerCase()}`}>
+            <div>
+              <span className="tag">Ribeye at {GROCERY_SOURCE.store}</span>
+              <div className="d compare-num store">{money2(ribeye.cut.retail)}</div>
             </div>
-            <p className="dim">
-              USDA-reported national retail average for Choice beef (April 2026) — a blend of
-              cuts, and a blend of animals.
-            </p>
-          </div>
-          <div>
-            <span className="tag">The quality</span>
-            <div className="d" style={{ fontSize: "clamp(1.6rem,2.6vw,2rem)", lineHeight: 1.1 }}>
-              Choice or Prime
+            <div className="compare-bar"><i style={{ width: "100%" }} /></div>
+            <div>
+              <span className="tag">Ribeye in a Ranch Cuts {SHARES[savingsShare].label.toLowerCase()}</span>
+              <div className="d compare-num">{money2(SHARES[savingsShare].takehomeRate)}</div>
             </div>
-            <p className="dim">{QUALITY}</p>
-          </div>
-        </div>
-      </section>
-
-      {/* colorado photo band */}
-      <section className="photo-band" style={{ backgroundImage: `url(${IMAGES.heroPlains})` }}>
-        <div className="photo-band-inner wide" style={{ paddingLeft: 0, paddingRight: 0 }}>
-          <div style={{ padding: "0 var(--page-x)" }}>
-            <span className="tag">Grain finished · Pasture raised</span>
-            <h2 className="d" style={{ marginTop: "var(--space-sm)" }}>
-              All of it happens in Colorado.
-            </h2>
-            <p>
-              Pasture-raised on our Colorado ranch, grain-finished on our Colorado pens for
-              rich marbling, and processed locally at Colorado Custom in Kersey. We maintain
-              ownership from conception to harvest — no sale barns, no middlemen.
-            </p>
+            <div className="compare-bar yours"><i style={{ width: `${(SHARES[savingsShare].takehomeRate / ribeye.cut.retail) * 100}%` }} /></div>
           </div>
         </div>
       </section>
@@ -149,40 +134,32 @@ export default function Landing() {
           <div className="section-head">
             <h2 className="d">Versus the grocery store</h2>
             <p>
-              Your beef costs the same {money2(TAKEHOME_RATE_EST)}/lb whether it comes out as
-              ribeyes or burger. The store charges you a different price for every cut — here's
-              what that difference is worth.
+              The same pounds of the same cuts, priced at {GROCERY_SOURCE.store} in {GROCERY_SOURCE.where}. Pick a size.
             </p>
           </div>
 
           <div className="savings-switch" role="group" aria-label="Share size">
             {Object.values(SHARES).map((s) => (
-              <button key={s.id} className={"chip" + (savingsShare === s.id ? " on" : "")}
+              <button key={s.id} className={"chip" + (savingsShare === s.id ? " on" : "")} aria-pressed={savingsShare === s.id}
                 onClick={() => setSavingsShare(s.id)}>{s.label}</button>
             ))}
           </div>
 
           <div className="savings-headline">
             <div>
-              <span className="tag">Same beef at {GROCERY_SOURCE.store}</span>
+              <span className="tag">At {GROCERY_SOURCE.store}</span>
               <div className="d savings-big savings-store">{money(sv.totals.store)}</div>
-              <p className="small mute">
-                blended shelf price ≈ {money2(sv.totals.storePerLb)}/lb across roughly {sv.totals.lbs} lb.
-              </p>
+              <p className="small mute">about {money2(sv.totals.storePerLb)}/lb across {sv.totals.lbs} lb</p>
             </div>
             <div>
-              <span className="tag">From Thunderbolt Ranch</span>
+              <span className="tag">A Ranch Cuts {SHARES[savingsShare].label.toLowerCase()}</span>
               <div className="d savings-big">{money(sv.totals.yours)}</div>
-              <p className="small mute">
-                the same {sv.totals.lbs} lb at {money2(TAKEHOME_RATE_EST)}/lb, every cut.
-              </p>
+              <p className="small mute">{money2(SHARES[savingsShare].takehomeRate)}/lb, every cut, processing included</p>
             </div>
             <div>
-              <span className="tag">You save</span>
+              <span className="tag">You keep</span>
               <div className="d savings-big">{money(sv.totals.saved)}</div>
-              <p className="small mute">
-                on a {SHARES[savingsShare].label.toLowerCase()} — about {money2(sv.totals.store / sv.totals.lbs - TAKEHOME_RATE_EST)}/lb.
-              </p>
+              <p className="small mute">on a {SHARES[savingsShare].label.toLowerCase()}</p>
             </div>
           </div>
 
@@ -194,7 +171,7 @@ export default function Landing() {
                   <th className="n">Lbs</th>
                   <th className="n">Your $/lb</th>
                   <th className="n">{GROCERY_SOURCE.store} $/lb</th>
-                  <th className="n">You save</th>
+                  <th className="n">Difference</th>
                 </tr>
               </thead>
               <tbody>
@@ -205,7 +182,7 @@ export default function Landing() {
                       <span className="cut-store">vs. {r.cut.store}</span>
                     </td>
                     <td className="n mono">{r.lbs}</td>
-                    <td className="n mono">{money2(TAKEHOME_RATE_EST)}</td>
+                    <td className="n mono">{money2(SHARES[savingsShare].takehomeRate)}</td>
                     <td className="n mono">{money2(r.cut.retail)}</td>
                     <td className={"n mono" + (r.saved >= 10 ? " save" : " even")}>{moneySigned(r.saved)}</td>
                   </tr>
@@ -213,7 +190,7 @@ export default function Landing() {
               </tbody>
               <tfoot>
                 <tr>
-                  <td>Total, {SHARES[savingsShare].label.toLowerCase()} beef</td>
+                  <td>Total</td>
                   <td className="n mono">{sv.totals.lbs}</td>
                   <td className="n mono">{money(sv.totals.yours)}</td>
                   <td className="n mono">{money(sv.totals.store)}</td>
@@ -222,91 +199,68 @@ export default function Landing() {
               </tfoot>
             </table>
           </div>
-          <p className="small mute" style={{ marginTop: "var(--space-md)", maxWidth: "70ch" }}>
-            Pound estimates are for a typical animal. Store prices are {GROCERY_SOURCE.store}'s
-            regular shelf prices in {GROCERY_SOURCE.where} on {GROCERY_SOURCE.date} — no sale or
-            coupon pricing — for the closest comparable cut. They move with the market, so treat
-            this as a guide, not a quote.
+          <p className="small mute" style={{ marginTop: "var(--space-md)", maxWidth: "72ch" }}>
+            Pounds are estimates for a typical steer. Store prices are {GROCERY_SOURCE.store}'s regular shelf prices
+            in {GROCERY_SOURCE.where} on {GROCERY_SOURCE.date}, no sale or loyalty pricing, for the closest comparable cut, using a typical
+            steer's mix of cuts. Ground beef costs more in a share than a tray of store burger. The steaks are where a share pays off.
           </p>
+        </div>
+      </section>
 
-          <div className="threes edge-grid">
-            <div className="three">
-              <div className="num">WHY IT COSTS LESS</div>
-              <h3 className="d">No middleman, no markup stack</h3>
-              <p>
-                Grocery beef passes through a packer, a distributor, a truck, and a store with
-                rent, staff, and shrink — and every one of them takes a cut. Ours goes from our
-                pasture to a butcher twenty minutes up the road to your freezer. We sell direct
-                to our neighbors, so those savings stay here on the Front Range, with you.
-              </p>
-            </div>
-            <div className="three">
-              <div className="num">WHY IT'S BETTER</div>
-              <h3 className="d">One Angus, not a blend</h3>
-              <p>
-                Store beef is a blend of animals from who-knows-where, cut for the shelf. Yours is
-                one Angus steer, pasture-raised and grain-finished on our ranch, typically grading
-                Choice or Prime, dry-aged 14 days, and cut exactly to your sheet. Better beef at a
-                better price — and you know the ranch it came from.
-              </p>
-            </div>
+      {/* why it costs less */}
+      <section className="photo-band" style={{ backgroundImage: `url(${IMAGES.heroPlains})` }}>
+        <div className="photo-band-inner wide" style={{ paddingLeft: 0, paddingRight: 0 }}>
+          <div style={{ padding: "0 var(--page-x)" }}>
+            <span className="tag">Why it costs less</span>
+            <h2 className="d" style={{ marginTop: "var(--space-sm)" }}>Ranch, butcher, freezer. That's the whole supply chain.</h2>
+            <p>
+              Store beef passes through a sale barn, a packer, a distributor and a grocery store, and each one takes a cut. A share
+              skips all of them. You pay less than the store, and the rancher earns more than the sale barn would pay.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* pricing */}
+      {/* sizes */}
       <section className="page section">
         <div className="wide">
           <div className="section-head">
-            <h2 className="d">Pricing &amp; deposits</h2>
+            <h2 className="d">Three sizes</h2>
             <p>
-              {money2(HANGING_RATE)}/lb hanging weight, every share size. {money(DEPOSIT)} deposit
-              holds your beef and applies to your total; the balance is due at pickup. Every
-              figure marked <sup>*</sup> is an estimate for a typical animal.
+              Prices in Denver, all in. The bigger the share, the lower the price a pound. A {money(DEPOSIT)} deposit holds any size.
             </p>
           </div>
           <div className="share-grid">
             {Object.values(SHARES).map((s) => (
-              <div className="share-card" key={s.id} style={{ cursor: "default" }}>
+              <div className="share-card price-card" key={s.id}>
                 {s.id === "half" && <span className="share-badge">Most popular</span>}
                 <div className="d">{s.label}</div>
-                <div className="d" style={{ fontSize: "2.2rem", marginTop: 6, color: "var(--rust)" }}>{money(s.total)}<sup>*</sup></div>
+                <div className="d price-big">{money(s.total)}<sup>*</sup></div>
+                <p className="small mute">{money2(s.rate)}/lb hanging weight · about {money2(s.takehomeRate)}/lb take-home</p>
                 <div className="share-specs">
-                  <span>≈ {s.takehome} LBS TAKE-HOME<sup>*</sup></span>
-                  <span className="hot">FREEZER {s.freezer}</span>
+                  <span>About {s.takehome} lb of beef<sup>*</sup></span>
+                  <span>Freezer {s.freezer}</span>
                 </div>
                 <p className="share-feeds">Feeds {s.feeds}.</p>
-                <Link className="share-sample" to={`/track/${SAMPLE_CODE}?share=${s.id}`}>
-                  See the estimated cut sheet for a {s.label.toLowerCase()} →
-                </Link>
-                <div className="share-price">
-                  <span className="mute small">{money(DEPOSIT)} deposit</span>
-                  <strong>{money(balanceAtPickup(s))} at pickup<sup>*</sup></strong>
-                </div>
               </div>
             ))}
           </div>
-          <p className="small mute" style={{ marginTop: "var(--space-md)", maxWidth: "70ch" }}>
-            <sup>*</sup>Prices and weights are estimates for a typical {LIVE_TYP.toLocaleString()} lb
-            animal. You pay {money2(HANGING_RATE)}/lb on your animal's actual hanging weight, so your
-            final total moves with the animal.
+          <p className="small mute" style={{ marginTop: "var(--space-md)", maxWidth: "72ch" }}>
+            <sup>*</sup>Estimates for a typical 1,500 lb steer. Each total is two charges: a fixed price for your share of the steer,
+            paid to the ranch, and processing, billed by the butcher on your steer's actual hanging weight.{" "}
+            <Link to={`/local/${LIVE.slug}`}>See the Denver breakdown</Link>.
           </p>
-          <div style={{ marginTop: "var(--space-lg)", display: "flex", gap: "var(--space-md)", alignItems: "center", flexWrap: "wrap" }}>
-            <Link to="/order" className="btn btn-dark">Start an order</Link>
-            <span className="small mute">{season.label} harvest · pickup {season.pickupText}.</span>
-          </div>
         </div>
       </section>
 
-      {/* choosing your cuts */}
-      <section className="page section">
+      {/* what's in it */}
+      <section className="page section section-tint">
         <div className="wide">
           <div className="section-head">
             <h2 className="d">Your beef, your way</h2>
             <p>
-              A guided cut sheet walks you through every decision — steak thickness, roast
-              sizes, ground beef ratio, and more — and we fill out the butcher's official
-              form for you. Every question comes with a plain-English explanation.
+              Steak thickness, roast sizes, ground beef packages, the brisket, the bones. The cut sheet asks one question at a time and
+              explains every cut in plain English.
             </p>
           </div>
           <div className="cut-strip">
@@ -317,74 +271,39 @@ export default function Landing() {
               </figure>
             ))}
           </div>
-
-          <div className="sample-band">
-            <div>
-              <span className="tag">See one before you build one</span>
-              <h3 className="d" style={{ marginTop: "var(--space-xs)" }}>A finished cut sheet, start to finish</h3>
-              <p className="small">
-                This is a real sample order — the same page you'll get after you reserve. Every
-                steak, roast, and pound of ground beef a half yields, laid out the way it lands
-                in your freezer.
-              </p>
-            </div>
-            <Link to={`/track/${SAMPLE_CODE}`} className="btn btn-on-dark btn-big">
-              View the sample order
-            </Link>
-          </div>
         </div>
       </section>
 
-      {/* timeline + pickup/payment */}
-      <section className="page section section-tint">
-        <div className="wide">
-          <div className="section-head">
-            <h2 className="d">Timeline &amp; pickup — {season.label}</h2>
-            <p>
-              We harvest by season, a set number of steers at a time. Once this {season.name}'s
-              steers are all reserved, new orders are placed in our {nextSeason.name} harvest —
-              pickup {nextSeason.pickupText}.
-            </p>
-          </div>
-          <div className="cal-grid" style={{ marginBottom: "var(--space-xl)" }}>
-            {[
-              { d: `This ${season.name}`, t: "Your steer is harvested at Colorado Custom in Kersey" },
-              { d: "14 days", t: "On the hook — dry aging & tenderizing" },
-              { d: "Cut to order", t: "Processed & packaged into your custom cuts" },
-              { d: season.pickup, t: "Ready for pickup in Kersey — we'll confirm your date" },
-            ].map((x) => (
-              <div className="cal-card" key={x.d} style={{ cursor: "default" }}>
-                <div className="d" style={{ color: "var(--rust)" }}>{x.d}</div>
-                <div className="small" style={{ marginTop: 6, color: "var(--ink-2)" }}>{x.t}</div>
-              </div>
+      {/* faq */}
+      <section className="page section">
+        <div className="wide faq-wrap">
+          <h2 className="d">Questions families ask</h2>
+          <div className="faq">
+            {FAQ.map((f) => (
+              <details key={f.q}>
+                <summary>{f.q}</summary>
+                <div className="a"><p>{f.a}</p></div>
+              </details>
             ))}
           </div>
-
-          <div className="dark-panel">
-            <div>
-              <span className="tag">Pickup</span>
-              <p>{PROCESSOR.name}<br />{PROCESSOR.address}<br />{PROCESSOR.phone}</p>
-              <p className="dim">{STORAGE_NOTE}</p>
-            </div>
-            <div>
-              <span className="tag">Who you pay</span>
-              <p>
-                Colorado Custom processes your beef and is where you'll pick it up — but they
-                are not who you pay. Your {money(DEPOSIT)} deposit and final balance are paid
-                directly to {PAYABLE_TO}.
-              </p>
-              <p className="dim">Checks payable to {PAYABLE_TO}.</p>
-            </div>
-            <div>
-              <span className="tag">Questions?</span>
-              <p>Call or text {RANCH_CONTACT.name} — {RANCH_CONTACT.phone}.</p>
-              <p className="dim">Pickup only — everything comes frozen, vacuum-sealed, labeled and boxed. Just leave room in the vehicle.</p>
-            </div>
-          </div>
         </div>
       </section>
 
-      <CutDialog primal={open} onClose={() => setOpenPrimal(null)} />
+      {/* closing zip + partners */}
+      <section className="page">
+        <div className="wide closing">
+          <div className="closing-main">
+            <RcMark width={120} body="var(--on-dark)" cuts="var(--pasture)" />
+            <h2 className="d">Find the ranch closest to you.</h2>
+            <ZipSearch dark id="zip-bottom" />
+          </div>
+          <div className="closing-side">
+            <span className="tag">Ranchers and butchers</span>
+            <p>Sell your steers by the share and fill your kill slots with booked families. We bring the customers and the paperwork.</p>
+            <Link to="/about#partner" className="btn btn-on-dark">Partner with us</Link>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

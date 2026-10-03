@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  SHARES, DEPOSIT, HANGING_RATE, TAKEHOME_RATE_EST, PROCESSOR,
+  SHARES, DEPOSIT, PROCESSOR, STORAGE_NOTE, SUPPORT, LISTING_NAME,
   SEASONS, CURRENT_SEASON, NEXT_SEASON, seasonOf,
   MAIN_CUTS, EXTRA_GROUPS, RIB_CHOICES, LOIN_CHOICES,
   RIB_YIELD, RIB_ROAST_LBS, TBONE_YIELD, STRIP_YIELD, FILET_YIELD,
@@ -11,6 +11,7 @@ import {
   steakCount, roastCount, money, money2, PAYABLE_TO, RANCH_CONTACT,
   type ShareId,
 } from "../data/config";
+import { LIVE } from "../data/partnerships";
 import SteerMap from "../components/SteerMap";
 import SteerTracker from "../components/SteerTracker";
 import { defaultCutSheet, createOrder, updateOrder, type Order as OrderRow, type CutSheetAnswers } from "../lib/store";
@@ -28,7 +29,7 @@ function depositUrl(code: string, email: string): string {
 }
 
 const inches = (id?: string) => THICKNESS_OPTIONS.find((t) => t.id === id)?.inches ?? 1;
-const fmtRange = ([lo, hi]: [number, number]) => (lo === hi ? `${lo}` : `${lo}–${hi}`);
+const fmtRange = ([lo, hi]: [number, number]) => (lo === hi ? `${lo}` : `${lo}-${hi}`);
 
 /* wizard step ids, in order */
 const QUESTIONS = [
@@ -47,6 +48,7 @@ export default function Order() {
   const [pdfBusy, setPdfBusy] = useState(false);
   const [placing, setPlacing] = useState(false);
   const [placeError, setPlaceError] = useState<string | null>(null);
+  const [ack, setAck] = useState(false);
   const availability = useAvailability();
 
   const frac = share ? SHARES[share].frac : 0.5;
@@ -58,16 +60,20 @@ export default function Order() {
   const place = async () => {
     setPlacing(true);
     setPlaceError(null);
-    /* fall while the share still fits, winter once it doesn't; the
-       order system has the final say since it sees every order */
+    /* this harvest while the share still fits, the next once it
+       doesn't; the order system has the final say since it sees every order */
     let order = createOrder({ share: share!, cutSheet: a, season: seasonFor(availability, share!), ...who });
     if (backendConfigured()) {
       try {
         const cost = shareCost(share!);
         const res = await submitOrder({
           order,
+          partnership: LIVE.slug,
           summary: boxSummary(a, share!),
-          cost: { total: cost.total, deposit: cost.deposit, balance: cost.balance },
+          cost: {
+            total: cost.total, animal: cost.animal, processing: cost.processing,
+            deposit: cost.deposit, animalBalance: cost.animalBalance, balance: cost.balance,
+          },
           depositLink: depositUrl(order.code, order.email),
         });
         if (res.season && res.season !== order.season) {
@@ -77,8 +83,8 @@ export default function Order() {
       } catch (err) {
         setPlacing(false);
         setPlaceError(
-          `We couldn't reach the ranch's order system (${(err as Error).message}). ` +
-          `Your order isn't lost — text Josh at ${RANCH_CONTACT.phone} with code ${order.code}, or try again.`,
+          `We couldn't reach the Ranch Cuts order system (${(err as Error).message}). ` +
+          `Your order isn't lost. Try again, or email ${SUPPORT.email} with code ${order.code}.`,
         );
         return;
       }
@@ -93,31 +99,37 @@ export default function Order() {
   if (placed) {
     const season = seasonOf(placed);
     const rolled = season.id !== CURRENT_SEASON;
+    const ps = SHARES[placed.share];
+    const pc = shareCost(placed.share);
     return (
       <main className="page confirm-wrap">
         <div className="tag" style={{ color: "var(--rust)", marginBottom: "var(--space-md)" }}>Reserved · {season.label}</div>
         <h2 className="d" style={{ fontSize: "clamp(2.2rem,5vw,3.2rem)" }}>
           {rolled ? `Your beef is booked for ${season.name}.` : "Your beef is booked."}
         </h2>
+        <p style={{ marginTop: "var(--space-sm)", color: "var(--ink-2)" }}>
+          {LISTING_NAME}. Beef from {LIVE.ranch.name}, cut at {LIVE.butcher.name}.
+        </p>
         {rolled && (
           <p style={{ marginTop: "var(--space-md)", color: "var(--ink-2)" }}>
-            Our {SEASONS[CURRENT_SEASON].name} harvest doesn't have a {SHARES[placed.share].label.toLowerCase()} left,
-            so your share is reserved from our {season.name} harvest — pickup {season.pickupText}.
+            The {SEASONS[CURRENT_SEASON].name} harvest doesn't have a {ps.label.toLowerCase()} left,
+            so your share is reserved from the {season.name} harvest, with pickup {season.pickupText}.
           </p>
         )}
         <p style={{ marginTop: "var(--space-md)", color: "var(--ink-2)" }}>
           Order <strong className="mono">{placed.code}</strong>
           {backendConfigured()
-            ? <> — a confirmation is on its way to {placed.email}.</>
-            : <> — save this code.</>}
+            ? <>. Ranch Cuts is sending a confirmation to {placed.email}.</>
+            : <>. Save this code.</>}
         </p>
 
         {STRIPE_PAYMENT_LINK ? (
           <div className="pay-panel" style={{ marginTop: "var(--space-lg)", textAlign: "left" }}>
             <span className="tag">One more step</span>
             <p className="small" style={{ marginBottom: "var(--space-md)" }}>
-              Your share is held once the {money(DEPOSIT)} deposit is in. Card payment is secure through Stripe;
-              your order code travels with it so we can match it up.
+              Your share is held once the {money(DEPOSIT)} deposit is in. It goes to {PAYABLE_TO} and
+              applies to your share of the steer. Card payment is secure through Stripe; your order
+              code travels with it so it can be matched up.
             </p>
             <a className="btn btn-on-dark btn-wide" href={depositUrl(placed.code, placed.email)} target="_blank" rel="noreferrer">
               Pay {money(DEPOSIT)} deposit now
@@ -127,18 +139,20 @@ export default function Order() {
           <div className="group-note" style={{ marginTop: "var(--space-lg)", textAlign: "left" }}>
             <span className="tag">Deposit</span>
             <span>
-              {RANCH_CONTACT.name} will reach out to collect your {money(DEPOSIT)} deposit — or call/text
-              him at {RANCH_CONTACT.phone} with order code <strong className="mono">{placed.code}</strong>.
+              {RANCH_CONTACT.name} at {LIVE.ranch.name} will reach out to collect your {money(DEPOSIT)} deposit,
+              which applies to your share of the steer. Or call or text him at {RANCH_CONTACT.phone} with
+              order code <strong className="mono">{placed.code}</strong>.
             </span>
           </div>
         )}
 
         <div className="next-steps">
           {[
-            ["Now", `Your ${money(DEPOSIT)} deposit holds your ${SHARES[placed.share].label.toLowerCase()}. You can adjust your cut sheet until your steer goes to the butcher.`],
-            [`This ${season.name}`, "Harvest. Your beef dry-ages 14 days at Colorado Custom in Kersey."],
-            ["After the hang", "Cut and packaged to your exact cut sheet, vacuum sealed and labeled."],
-            [season.pickup, `Pickup in Kersey — we'll confirm the date. About ${SHARES[placed.share].takehome} lb, frozen and boxed, so leave room in the vehicle. Balance of ${money(SHARES[placed.share].total - DEPOSIT)} due to ${PAYABLE_TO}.`],
+            ["Now", `Your ${money(DEPOSIT)} deposit holds your ${ps.label.toLowerCase()}. You can adjust your cut sheet until your steer goes to the butcher.`],
+            ["Bill of sale", `${LIVE.ranch.name} confirms your bill of sale and the ear tag of your steer. You own your share before harvest.`],
+            [`This ${season.name}`, `Harvest. Your beef dry-ages 14 days at ${LIVE.butcher.name} in ${LIVE.butcher.city}.`],
+            ["After the hang", "Cut and packaged to your cut sheet, vacuum sealed, and labeled Not For Sale with your name."],
+            [season.pickup, `Pickup at ${LIVE.butcher.name} in ${LIVE.butcher.city}, on a date we'll confirm. About ${ps.takehome} lb, frozen and boxed, so leave room in the vehicle. Due then: ${money(pc.animalBalance)} to ${PAYABLE_TO}, plus processing (about ${money(pc.processing)}) billed by ${LIVE.butcher.name}.`],
           ].map(([k, v]) => (
             <div className="next-step" key={k}>
               <div className="when">{k}</div>
@@ -157,7 +171,8 @@ export default function Order() {
           <Link className="btn btn-ghost" to={`/track/${placed.code}`}>Track this order</Link>
         </div>
         <p className="small mute" style={{ marginTop: "var(--space-md)" }}>
-          That's the actual Colorado Custom cutting-instructions form, filled out from your answers.
+          That's the actual {LIVE.butcher.name} cutting-instructions form, filled out from your answers.
+          Ranch questions: {RANCH_CONTACT.name}, {RANCH_CONTACT.phone}. Anything else: {SUPPORT.email}.
         </p>
       </main>
     );
@@ -180,9 +195,9 @@ export default function Order() {
           </div>
           <h2 className="d">How much beef?</h2>
           <p>
-            One price for every share: {money2(HANGING_RATE)}/lb hanging weight —
-            about {money2(TAKEHOME_RATE_EST)}/lb in your freezer. {money(DEPOSIT)} deposit
-            holds it, balance due at pickup.
+            You buy a share of one ear-tagged steer from {LIVE.ranch.name}, cut at {LIVE.butcher.name}.
+            Every cut costs the same per pound, steaks included, and the bigger the share, the lower
+            the price per pound. A {money(DEPOSIT)} deposit holds it; the rest is due at pickup.
           </p>
         </div>
 
@@ -200,11 +215,12 @@ export default function Order() {
                 <div className="d" style={{ fontSize: "2rem", marginTop: 6, color: on ? "var(--brass)" : "var(--rust)" }}>
                   {money(s.total)}<sup>*</sup>
                 </div>
+                <div className="of-rate">{money2(s.rate)}/lb all in<sup>*</sup></div>
                 <div className="share-specs">
                   <span>≈ {s.takehome} LBS TAKE-HOME<sup>*</sup></span>
                   <span className="hot">FREEZER {s.freezer}</span>
                 </div>
-                <p className="share-feeds">Feeds {s.feeds}.</p>
+                <p className="share-feeds">Feeds {s.feeds}. You're {s.owners} of the steer.</p>
                 <div className="share-price">
                   <span className="small" style={{ opacity: 0.75 }}>{money(DEPOSIT)} deposit</span>
                   <strong>{money(s.total - DEPOSIT)} at pickup<sup>*</sup></strong>
@@ -219,17 +235,20 @@ export default function Order() {
             <span className="tag">{nextSeason.name}</span>
             <span>
               Only {steerCount(steersLeft(availability))} of a steer is left in the {season.name} harvest,
-              so a {SHARES[share!].label.toLowerCase()} would be reserved from our {nextSeason.name} harvest —
-              pickup {nextSeason.pickupText}.
+              so a {SHARES[share!].label.toLowerCase()} would be reserved from the {nextSeason.name} harvest,
+              with pickup {nextSeason.pickupText}.
             </span>
           </div>
         )}
 
         <p className="small mute measure" style={{ marginBottom: "var(--space-lg)" }}>
-          <sup>*</sup>Estimates based on a typical 1,500 lb animal — your actual animal may run
-          somewhat above or below these figures, and you pay {money2(HANGING_RATE)}/lb on its
-          real hanging weight. Next: a short walk-through builds your custom cut sheet, one
-          question at a time, with a photo and a plain-English explanation for every cut.
+          <sup>*</sup>Estimates based on a typical 1,500 lb steer, about 900 lb hanging. The all-in total
+          is two charges: your share of the steer, a fixed price sold by {LIVE.ranch.name}, and
+          processing, billed by {LIVE.butcher.name} at its posted rates on your steer's actual hanging
+          weight. Only the processing line can move. Price per pound is shown on hanging weight as an
+          equivalent, to compare with other beef; it isn't how the steer is sold. Next: a short
+          walk-through builds your cut sheet, one question at a time, with a photo and a plain-English
+          explanation for every cut.
         </p>
 
         <div className="hero-actions" style={{ marginTop: 0 }}>
@@ -245,19 +264,21 @@ export default function Order() {
   /* ============ REVIEW ============ */
   if (q >= QUESTIONS.length) {
     const cost = shareCost(share!);
+    const sh = SHARES[share!];
     const lines = boxSummary(a, share!);
+    const ready = !!who.name && !!who.email && !!who.phone && ack;
     return (
       <main className="page order-main">
         <div className="section-head">
           <h2 className="d">Check it over</h2>
-          <p>This becomes your official Colorado Custom cut sheet — we fill out the butcher's form for you.</p>
+          <p>This becomes your official {LIVE.butcher.name} cut sheet. We fill out the butcher's form for you.</p>
         </div>
 
         <div className="cutsheet-grid left-heavy">
           <div className="ticket" style={{ alignSelf: "start" }}>
             <div className="ticket-head">
               <span className="tag">Your estimated box</span>
-              <span className="mute">{SHARES[share!].label.toUpperCase()} BEEF</span>
+              <span className="mute">{sh.label.toUpperCase()} BEEF</span>
             </div>
             {lines.map((l) => (
               <div className="ticket-row" key={l.name}>
@@ -275,21 +296,72 @@ export default function Order() {
             <div className="pay-panel">
               <span className="tag">What you'll pay</span>
               <div className="pay-row">
-                <span>Deposit today<span className="sub">To {PAYABLE_TO}. Applies to your total.</span></span>
+                <span>
+                  Your share of the steer
+                  <span className="sub">Sold by {LIVE.ranch.name}. Fixed price.</span>
+                </span>
+                <b>{money(cost.animal)}</b>
+              </div>
+              <div className="pay-row">
+                <span>
+                  Processing by {LIVE.butcher.name}
+                  <span className="sub">Billed by the butcher at its posted rates on actual hanging weight. Estimate.</span>
+                </span>
+                <b>{money(cost.processing)}</b>
+              </div>
+              <div className="pay-row total">
+                <span>All in<span className="sub">About {money2(cost.rate)}/lb hanging equivalent</span></span>
+                <b>{money(cost.total)}</b>
+              </div>
+              <div className="pay-row">
+                <span>Deposit today<span className="sub">To {PAYABLE_TO}. Applies to your share of the steer.</span></span>
                 <b>{money(cost.deposit)}</b>
               </div>
               <div className="pay-row">
-                <span>Balance at pickup<span className="sub">{cost.hangingLbs} lb hanging × {money2(HANGING_RATE)}/lb − deposit</span></span>
+                <span>
+                  Due at pickup
+                  <span className="sub">
+                    {money(cost.animalBalance)} to {LIVE.ranch.name}, plus processing (about {money(cost.processing)}) to {LIVE.butcher.name}
+                  </span>
+                </span>
                 <b>{money(cost.balance)}</b>
               </div>
-              <div className="pay-row total">
-                <span>Total</span>
-                <b>{money(cost.total)}</b>
-              </div>
               <p className="pay-fine">
-                No processing fees, no hidden costs — about {money2(TAKEHOME_RATE_EST)}/lb in your
-                freezer. Checks payable to {PAYABLE_TO}. Pickup at {PROCESSOR.name}, Kersey.
+                You'll sign a bill of sale for a {sh.label.toLowerCase()} share of one ear-tagged steer
+                from {LIVE.ranch.name}, as {sh.owners}. Ranch Cuts books your order and sends your cut
+                sheet; it never takes title to the animal or holds your money. Pickup only, at{" "}
+                {PROCESSOR.name}, {PROCESSOR.address}.
               </p>
+            </div>
+
+            <div className="of-disclosures">
+              <span className="tag">Good to know before you reserve</span>
+              <dl>
+                <dt>Custom processed, for you</dt>
+                <dd>
+                  Your beef is custom processed for you as an owner of the animal. It is not inspected
+                  for resale, and every package is labeled Not For Sale. It's for your household and
+                  your non-paying guests.
+                </dd>
+                <dt>Handling and storage</dt>
+                <dd>
+                  It comes home frozen, about {sh.takehome} lb. Bring coolers or leave room in the
+                  vehicle, keep it frozen at 0°F or colder, and thaw it in the fridge. You'll want
+                  {" "}{sh.freezer} of freezer space.
+                </dd>
+                <dt>Pickup</dt>
+                <dd>
+                  Pickup only, at {LIVE.butcher.name} in {LIVE.butcher.city}. {STORAGE_NOTE}
+                </dd>
+              </dl>
+              <label className="of-ack">
+                <input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} />
+                <span>
+                  I understand I'm buying a share of one live steer from {LIVE.ranch.name} by bill of sale,
+                  that processing is billed separately by {LIVE.butcher.name}, and that my beef is for my
+                  household, not for resale.
+                </span>
+              </label>
             </div>
 
             <div className="decision" style={{ display: "grid", gap: "var(--space-sm)" }}>
@@ -305,15 +377,18 @@ export default function Order() {
                     onChange={(e) => setWho({ ...who, [k]: e.target.value })} />
                 </div>
               ))}
-              <button className="btn btn-dark btn-wide" disabled={placing || !who.name || !who.email || !who.phone} onClick={place}>
+              <button className="btn btn-dark btn-wide" disabled={placing || !ready} onClick={place}>
                 {placing ? "Reserving…" : `Reserve & pay ${money(DEPOSIT)} deposit`}
               </button>
+              {!ack && who.name && who.email && who.phone && (
+                <p className="small mute" style={{ textAlign: "center" }}>Check the box above to reserve.</p>
+              )}
               {placeError && <p className="small" style={{ color: "var(--rust)" }}>{placeError}</p>}
               <p className="small mute" style={{ textAlign: "center" }}>
                 {STRIPE_PAYMENT_LINK
                   ? "Next: secure card payment through Stripe."
-                  : `${RANCH_CONTACT.name} will collect your deposit after you reserve.`}{" "}
-                Questions? Call or text {RANCH_CONTACT.name}: {RANCH_CONTACT.phone}.
+                  : `${RANCH_CONTACT.name} at ${LIVE.ranch.name} will collect your deposit after you reserve.`}{" "}
+                Ranch questions: {RANCH_CONTACT.name}, {RANCH_CONTACT.phone}. Anything else: {SUPPORT.email}.
               </p>
             </div>
 
@@ -363,8 +438,8 @@ export default function Order() {
 
   if (qid === "rib") {
     title = "The rib section";
-    where = "Along the upper back — barely worked, heavily marbled. The luxury cuts live here.";
-    help = "This is one muscle, and you choose the shape it arrives in: a standing prime rib roast for the holidays, bone-in rib steaks, or classic boneless ribeyes. You can't have all three — they come out of each other.";
+    where = "Along the upper back. Barely worked, heavily marbled. The luxury cuts live here.";
+    help = "This is one muscle, and you choose the shape it arrives in: a standing prime rib roast for the holidays, bone-in rib steaks, or classic boneless ribeyes. You can't have all three, because they come out of each other.";
     const c = a.rib.choice === "prime" ? undefined : steakCount(RIB_YIELD, frac, inches(a.rib.thickness));
     body = (
       <>
@@ -383,7 +458,7 @@ export default function Order() {
           </div>
         ); })()}
         {a.rib.choice === "prime" ? (
-          <p className="chip-note">Your {SHARES[share!].label.toLowerCase()} yields {share === "whole" ? "two prime rib roasts (one per side)" : share === "half" ? "one full prime rib roast" : "one smaller prime rib roast"} — roughly {fmtRange(roastCount(RIB_ROAST_LBS, frac, 5))} × 5 lb pieces.</p>
+          <p className="chip-note">Your {SHARES[share!].label.toLowerCase()} yields {share === "whole" ? "two prime rib roasts (one per side)" : share === "half" ? "one full prime rib roast" : "one smaller prime rib roast"}, roughly {fmtRange(roastCount(RIB_ROAST_LBS, frac, 5))} × 5 lb pieces.</p>
         ) : (
           <>
             <ThicknessPicker value={a.rib.thickness} count={c} what={a.rib.choice === "ribsteak" ? "rib steaks" : "ribeyes"}
@@ -469,7 +544,7 @@ export default function Order() {
           </>
         )}
         {ans.mode === "grind" && (
-          <p className="chip-note">Rolls into your ground beef — running estimate <b>{ground[0]}–{ground[1]} lb</b>.</p>
+          <p className="chip-note">Rolls into your ground beef. Running estimate: <b>{ground[0]}-{ground[1]} lb</b>.</p>
         )}
       </>
     );
@@ -478,7 +553,7 @@ export default function Order() {
     const unanswered = group.cuts.filter((c) => !a.extras[c.id]).length;
     title = group.title;
     where = group.intro;
-    help = "Keep it and it comes home as that cut; grind it and it joins your ground beef. Pick one for each — there's no default here.";
+    help = "Keep it and it comes home as that cut; grind it and it joins your ground beef. Pick one for each; there's no default here.";
     blocked = unanswered > 0;
     blockedNote = unanswered === 1
       ? "One cut still needs a keep-or-grind answer."
@@ -513,7 +588,7 @@ export default function Order() {
   } else if (qid === "ground") {
     const loose = looseGround(a, share!);
     title = "Ground beef";
-    where = `Everything you didn't keep whole, plus the trim — you're at roughly ${ground[0]}–${ground[1]} lb.`;
+    where = `Everything you didn't keep whole, plus the trim. You're at roughly ${ground[0]}-${ground[1]} lb.`;
     help = "This is the package you'll reach for most. Pick the size that matches how you cook, and decide if you want some pressed into patties.";
     body = (
       <>
@@ -550,7 +625,7 @@ export default function Order() {
               <Chips opts={PATTY_LB_OPTIONS} value={a.pattyLbs} onPick={(v) => setA({ ...a, pattyLbs: v })} />
               {loose && (
                 <p className="chip-note">
-                  That leaves roughly <b>{loose[0]}–{loose[1]} lb</b> as loose ground in {a.groundPack} lb packages.
+                  That leaves roughly <b>{loose[0]}-{loose[1]} lb</b> as loose ground in {a.groundPack} lb packages.
                 </p>
               )}
             </div>
@@ -560,7 +635,7 @@ export default function Order() {
     );
   } else if (qid === "organs") {
     title = "Organs & bones";
-    where = "Included at no extra charge — but only if you ask.";
+    where = "Included at no extra charge, but only if you ask.";
     help = "If you don't check them, they don't come home with you. Broth makers: take the bones.";
     body = (
       <>
@@ -598,7 +673,7 @@ export default function Order() {
   } else if (qid === "notes") {
     title = "Special requests";
     where = "Anything the form doesn't have a box for.";
-    help = "Tell us how you cook and we'll pass it along — extra-thick steaks for one cut, bones cut short for your stock pot, a package count that suits your freezer.";
+    help = "Tell us how you cook and we'll pass it along: extra-thick steaks for one cut, bones cut short for your stock pot, a package count that suits your freezer.";
     body = (
       <>
         <div className="field">
@@ -609,13 +684,13 @@ export default function Order() {
         <div className="callout">
           <span className="tag">One more step for special requests</span>
           <p>
-            Anything out of the ordinary — tallow, unusual thicknesses, custom package
-            counts — isn't a box on the butcher's form. After you submit your order,
+            Anything out of the ordinary (tallow, unusual thicknesses, custom package
+            counts) isn't a box on the butcher's form. After you submit your order,
             give {PROCESSOR.name} a call at <a href={`tel:${PROCESSOR.phone}`}><b>{PROCESSOR.phone}</b></a> and
             talk it through with them directly. Have your order code handy.
           </p>
           <p className="small mute" style={{ marginTop: "var(--space-xs)" }}>
-            Your notes ride along on your cut sheet, and {RANCH_CONTACT.name} sees them too — {RANCH_CONTACT.phone}.
+            Your notes ride along on your cut sheet, and {RANCH_CONTACT.name} at {LIVE.ranch.name} sees them too: {RANCH_CONTACT.phone}.
           </p>
         </div>
       </>
@@ -655,7 +730,7 @@ export default function Order() {
 
       <div className="ground-tally">
         <span className="tag">Ground beef so far</span>
-        <span className="ground-tally-num">≈ {ground[0]}–{ground[1]} lb</span>
+        <span className="ground-tally-num">≈ {ground[0]}-{ground[1]} lb</span>
         <span className="ground-tally-sub">Updates as you keep or grind each cut</span>
       </div>
 

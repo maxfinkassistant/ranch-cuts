@@ -3,9 +3,10 @@
 
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { SHARES, DEPOSIT, HANGING_RATE, PAYABLE_TO, RANCH_CONTACT, seasonOf, money, money2 } from "../data/config";
+import { SHARES, PAYABLE_TO, RANCH_CONTACT, SUPPORT, LISTING_NAME, seasonOf, money, money2 } from "../data/config";
+import { LIVE } from "../data/partnerships";
 import { getOrder, listSteers, type Order, type Steer } from "../lib/store";
-import { boxSummary, finalPrice, rateNote } from "../lib/estimate";
+import { boxSummary, finalPrice, discountNote, shareCost } from "../lib/estimate";
 import { downloadCutSheet } from "../lib/cutsheetPdf";
 import { backendConfigured, fetchOrder, fetchOffice } from "../lib/api";
 
@@ -19,7 +20,7 @@ export default function CustomerTicket() {
      this browser session by the Ranch Office login) also brings the steers */
   useEffect(() => {
     if (!backendConfigured()) return;
-    const key = sessionStorage.getItem("tr.admin.key");
+    const key = sessionStorage.getItem("rc.admin.key");
     if (key) {
       fetchOffice(key)
         .then((office) => {
@@ -49,8 +50,8 @@ export default function CustomerTicket() {
   const steer = steers.find((s) => s.id === order.steer);
   /* real money once the steer has been weighed, the estimate until then */
   const price = finalPrice(order.share, steer);
-  const note = rateNote(price);
-  const total = price?.total ?? SHARES[order.share].total;
+  const note = discountNote(price);
+  const est = shareCost(order.share);
   const readyOn = steer?.readyDate
     ? new Date(steer.readyDate + "T12:00:00").toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })
     : null;
@@ -74,25 +75,27 @@ export default function CustomerTicket() {
 
       <div className="ticket" style={{ marginTop: "var(--space-md)" }}>
         <div className="ticket-head">
-          <span className="tag">Thunderbolt Ranch · Order</span>
+          <span className="tag">{LISTING_NAME} · Order</span>
           <span className="mute">{order.code}</span>
         </div>
         <div className="ticket-row"><span className="k">Customer</span><span className="v">{order.name}</span></div>
-        <div className="ticket-row"><span className="k">Phone</span><span className="v">{order.phone || "—"}</span></div>
+        <div className="ticket-row"><span className="k">Phone</span><span className="v">{order.phone || "None given"}</span></div>
         <div className="ticket-row"><span className="k">Email</span><span className="v">{order.email}</span></div>
-        <div className="ticket-row"><span className="k">Address</span><span className="v">{order.address || "—"}</span></div>
+        <div className="ticket-row"><span className="k">Address</span><span className="v">{order.address || "None given"}</span></div>
+        <div className="ticket-row"><span className="k">Ranch</span><span className="v">{LIVE.ranch.name}</span></div>
+        <div className="ticket-row"><span className="k">Butcher</span><span className="v">{LIVE.butcher.name}, {LIVE.butcher.city}</span></div>
         <hr className="ticket-sep" />
-        <div className="ticket-row"><span className="k">Share</span><span className="v">{SHARES[order.share].label} beef · ~{SHARES[order.share].hanging} lb hanging</span></div>
+        <div className="ticket-row"><span className="k">Share</span><span className="v">{SHARES[order.share].label} beef, {SHARES[order.share].owners}, ~{SHARES[order.share].hanging} lb hanging equivalent</span></div>
         <div className="ticket-row"><span className="k">Harvest</span><span className="v">{season.label}</span></div>
         <div className="ticket-row">
           <span className="k">Steer</span>
           <span className="v">
             {order.steer
-              ? `${order.steer}${steer?.hangingWeight ? ` · ${steer.hangingWeight} lb hanging` : ""}`
+              ? `${order.steer}${steer?.hangingWeight ? `, ${steer.hangingWeight} lb hanging` : ""}`
               : "Not assigned yet"}
           </span>
         </div>
-        <div className="ticket-row"><span className="k">Pickup</span><span className="v">{readyOn ? `Est. ${readyOn}` : season.pickup}, Kersey</span></div>
+        <div className="ticket-row"><span className="k">Pickup</span><span className="v">{readyOn ? `Est. ${readyOn}` : season.pickup}, {LIVE.butcher.city}</span></div>
         <hr className="ticket-sep" />
         {lines.map((l) => (
           <div className="ticket-row" key={l.name}>
@@ -107,40 +110,65 @@ export default function CustomerTicket() {
         {price ? (
           <>
             <div className="ticket-row">
-              <span className="k">Your share of the hang</span>
-              <span className="v">{price.shareLbs} lb</span>
+              <span className="k">Share of the steer, {LIVE.ranch.name} (fixed)</span>
+              <span className="v">
+                {money(price.animal)}
+                {price.discount > 0 && <>, {money(price.discount)} off {money(price.animalList)}</>}
+              </span>
             </div>
             <div className="ticket-row">
-              <span className="k">Price per pound</span>
-              <span className="v">
-                {money2(price.rate)}
-                {price.adjusted && <> · was {money2(price.standardRate)}</>}
-              </span>
+              <span className="k">Processing, billed by {LIVE.butcher.name}</span>
+              <span className="v">{money2(price.processing)}</span>
+            </div>
+            {price.processingLines.map((l) => (
+              <div className="ticket-row" key={l.label}>
+                <span className="k of-indent">{l.label}</span>
+                <span className="v">{money2(l.amount)}</span>
+              </div>
+            ))}
+            <div className="ticket-row"><span className="k">All in</span><span className="v">{money2(price.total)}</span></div>
+            <div className="ticket-row"><span className="k">Deposit</span><span className="v">{money(price.deposit)}, paid to {PAYABLE_TO}</span></div>
+            <div className="ticket-row"><span className="k">Animal balance to {PAYABLE_TO}</span><span className="v">{money(price.animalBalance)}</span></div>
+            <div className="ticket-row"><span className="k">Processing to {LIVE.butcher.name}</span><span className="v">{money2(price.processing)}</span></div>
+            <div className="ticket-total">
+              <span>DUE AT PICKUP</span>
+              <span className="v">{money2(price.balance)}</span>
             </div>
           </>
         ) : (
-          <div className="ticket-row"><span className="k">Price per pound</span><span className="v">{money2(HANGING_RATE)}</span></div>
+          <>
+            <div className="ticket-row">
+              <span className="k">Share of the steer, {LIVE.ranch.name} (fixed)</span>
+              <span className="v">{money(est.animal)}</span>
+            </div>
+            <div className="ticket-row">
+              <span className="k">Processing, billed by {LIVE.butcher.name} (est.)</span>
+              <span className="v">{money(est.processing)}</span>
+            </div>
+            <div className="ticket-row"><span className="k">All in (est.)</span><span className="v">{money(est.total)} at {money2(est.rate)}/lb equivalent</span></div>
+            <div className="ticket-row"><span className="k">Deposit</span><span className="v">{money(est.deposit)}, paid to {PAYABLE_TO}</span></div>
+            <div className="ticket-row"><span className="k">Animal balance to {PAYABLE_TO}</span><span className="v">{money(est.animalBalance)}</span></div>
+            <div className="ticket-row"><span className="k">Processing to {LIVE.butcher.name} (est.)</span><span className="v">{money(est.processing)}</span></div>
+            <div className="ticket-total">
+              <span>DUE AT PICKUP (EST.)</span>
+              <span className="v">{money(est.balance)}</span>
+            </div>
+          </>
         )}
-        <div className="ticket-row"><span className="k">Total{price ? "" : " (est.)"}</span><span className="v">{money(total)}</span></div>
-        <div className="ticket-row"><span className="k">Deposit</span><span className="v">{money(DEPOSIT)} · paid to {PAYABLE_TO}</span></div>
-        <div className="ticket-total">
-          <span>BALANCE AT PICKUP</span>
-          <span className="v">{money(total - DEPOSIT)}</span>
-        </div>
       </div>
 
       {note && (
         <div className="rate-note">
-          <span className="tag">Why your price per pound went down</span>
+          <span className="tag">Ranch discount on this steer</span>
           <p>{note}</p>
         </div>
       )}
 
       <p className="small mute" style={{ marginTop: "var(--space-md)" }}>
-        Ranch questions: {RANCH_CONTACT.name}, {RANCH_CONTACT.phone}.{" "}
+        Ranch questions: {RANCH_CONTACT.name}, {RANCH_CONTACT.phone}. Anything else: {SUPPORT.email}.{" "}
         {price === null
-          ? "Balance is estimated on typical weights — final number follows the animal's actual hanging weight."
-          : `Balance is figured on this steer's actual hanging weight at ${money2(price.rate)}/lb.`}
+          ? "The share of the steer is a fixed price. Processing is estimated on a typical carcass; the butcher bills it on the actual hanging weight."
+          : `Processing is figured at ${LIVE.butcher.name}'s posted rates on this steer's ${price.hangingLbs} lb hanging weight. The butcher's own invoice is final.`}
       </p>
     </main>
   );

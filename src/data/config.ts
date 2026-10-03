@@ -88,7 +88,7 @@ export const balanceAtPickup = (s: Share) => s.total - DEPOSIT;
    Beef is sold by seasonal harvest window, not exact dates: a set
    number of steers per season, and once those are spoken for new
    orders roll to the next season. The season ids are mirrored in
-   apps-script/Code.gs — change both together.                    */
+   apps-script/Code.gs; change both together.                    */
 
 export type SeasonId = "fall-2026" | "winter-2027" | "spring-2027";
 
@@ -172,9 +172,9 @@ export const IMAGES = {
    ============================================================ */
 
 export const THICKNESS_OPTIONS = [
-  { id: "3/4", label: '3/4"', inches: 0.75, note: "Thin and fast-cooking — easy to overcook." },
+  { id: "3/4", label: '3/4"', inches: 0.75, note: "Thin and fast-cooking. Easy to overcook." },
   { id: "1", label: '1"', inches: 1, note: "The default. Hard to get wrong." },
-  { id: "1 1/4", label: '1 1/4"', inches: 1.25, note: "Steakhouse thickness — best sear-to-center ratio." },
+  { id: "1 1/4", label: '1 1/4"', inches: 1.25, note: "Steakhouse thickness, with the best sear-to-center ratio." },
   { id: "1 1/2", label: '1 1/2"', inches: 1.5, note: "Thick. Sear then finish over low heat." },
   { id: "2", label: '2"', inches: 2, note: "A showpiece to share. Reverse-sear it." },
 ];
@@ -220,8 +220,8 @@ export interface MainCutDef {
 export const MAIN_CUTS: MainCutDef[] = [
   {
     id: "chuck", name: "Chuck",
-    where: "The front shoulder — the biggest working muscle on the animal.",
-    help: "Chuck roast is the pot-roast, birria, and shredded-beef cut: slow heat melts it into the most useful roast in your freezer. Chuck steaks are the budget grilling option. Ground, it makes the best-tasting burger there is — but you give up the roasts to get it.",
+    where: "The front shoulder, the biggest working muscle on the animal.",
+    help: "Chuck roast is the pot-roast, birria, and shredded-beef cut: slow heat melts it into the most useful roast in your freezer. Chuck steaks are the budget grilling option. Ground, it makes the best-tasting burger there is, but you give up the roasts to get it.",
     modes: ["roast", "steak", "grind"],
     yield: { lbsWhole: [55, 75], lbPerInch: 1.3 },
     roastLbs: [55, 75],
@@ -238,7 +238,7 @@ export const MAIN_CUTS: MainCutDef[] = [
   {
     id: "sirloin", name: "Sirloin",
     where: "Behind the loin, ahead of the hip.",
-    help: "The weeknight steak — leaner than a ribeye, takes a marinade beautifully, and you won't feel guilty tossing it on a Tuesday grill. Sirloin roasts slice thin for sandwiches.",
+    help: "The weeknight steak. Leaner than a ribeye, takes a marinade beautifully, and you won't feel guilty tossing it on a Tuesday grill. Sirloin roasts slice thin for sandwiches.",
     modes: ["steak", "roast"],
     yield: { lbsWhole: [18, 26], lbPerInch: 1.4 },
     roastLbs: [18, 26],
@@ -255,8 +255,8 @@ export const MAIN_CUTS: MainCutDef[] = [
   },
   {
     id: "topround", name: "Top Round",
-    where: "The inside of the hind leg — big and lean.",
-    help: "The classic roast-beef and London-broil cut. Roasted and sliced thin it's a deli counter in your freezer. Most folks grind it — it's the fastest way to build a real burger pile.",
+    where: "The inside of the hind leg. Big and lean.",
+    help: "The classic roast-beef and London-broil cut. Roasted and sliced thin it's a deli counter in your freezer. Most folks grind it; it's the fastest way to build a real burger pile.",
     modes: ["roast", "steak", "grind"],
     yield: { lbsWhole: [20, 30], lbPerInch: 1.5 },
     roastLbs: [20, 30],
@@ -265,7 +265,7 @@ export const MAIN_CUTS: MainCutDef[] = [
   {
     id: "btmround", name: "Bottom Round",
     where: "The outside of the hind leg.",
-    help: "A little tougher than top round — made for pot roast, rump roast, and jerky. Most folks grind it and keep their roasts coming from the chuck.",
+    help: "A little tougher than top round, made for pot roast, rump roast, and jerky. Most folks grind it and keep their roasts coming from the chuck.",
     modes: ["roast", "grind"],
     roastLbs: [18, 26],
     defMode: "grind", popular: "grind",
@@ -276,12 +276,12 @@ export const MAIN_CUTS: MainCutDef[] = [
 export const RIB_CHOICES = [
   {
     id: "prime", label: "Prime rib roast",
-    gives: "The holiday centerpiece — a standing rib roast that feeds a crowd.",
+    gives: "The holiday centerpiece: a standing rib roast that feeds a crowd.",
     costs: "No rib steaks. Every one of them is inside that roast.",
   },
   {
     id: "ribsteak", label: "Rib steaks (bone-in)",
-    gives: "Ribeyes with the bone still on — more flavor at the grill, great presentation.",
+    gives: "Ribeyes with the bone still on. More flavor at the grill, great presentation.",
     costs: "No prime rib roast, and the bone takes up freezer space.",
   },
   {
@@ -298,7 +298,7 @@ export const RIB_ROAST_LBS: [number, number] = [14, 20];
 export const LOIN_CHOICES = [
   {
     id: "tbone", label: "T-bones",
-    gives: "Two steaks in one — strip on one side of the bone, filet on the other.",
+    gives: "Two steaks in one: strip on one side of the bone, filet on the other.",
     costs: "No separate NY strips or filet mignon; they're inside the T-bone.",
   },
   {
@@ -332,29 +332,29 @@ export const EXTRA_GROUPS: ExtraGroup[] = [
     id: "bbq", title: "The barbecue cuts",
     intro: "The low-and-slow projects. Keep them if you smoke or braise; grind them if you don't.",
     cuts: [
-      { id: "brisket", name: "Brisket", help: "The chest. Twelve hours of smoke turns it into the best thing you'll cook all year — or it makes exceptional burger.", popular: "yes" },
+      { id: "brisket", name: "Brisket", help: "The chest. Twelve hours of smoke turns it into the best thing you'll cook all year, or it makes exceptional burger.", popular: "yes" },
       { id: "shortribs", name: "Short ribs (English cut)", help: "Thick, bone-in braising ribs. Fall-apart tender in a Dutch oven.", popular: "yes" },
-      { id: "koreanribs", name: "Korean ribs (flanken cut)", help: "The same ribs cut thin across the bone for kalbi — quick on a hot grill.", popular: "grind" },
-      { id: "shanks", name: "Shanks", help: "Cross-cut with the marrow bone — osso buco, and the backbone of real broth.", popular: "yes" },
+      { id: "koreanribs", name: "Korean ribs (flanken cut)", help: "The same ribs cut thin across the bone for kalbi. Quick on a hot grill.", popular: "grind" },
+      { id: "shanks", name: "Shanks", help: "Cross-cut with the marrow bone for osso buco, and the backbone of real broth.", popular: "yes" },
     ],
   },
   {
     id: "fast", title: "The fast-cooking cuts",
-    intro: "Thin, grainy, full of flavor — fajitas, carne asada, stir-fry. Hot fire, sliced across the grain.",
+    intro: "Thin, grainy, full of flavor: fajitas, carne asada, stir-fry. Hot fire, sliced across the grain.",
     cuts: [
       { id: "flank", name: "Flank steak", help: "The fajita cut. One per side of beef.", popular: "yes" },
-      { id: "skirtsteak", name: "Skirt steak", help: "The carne asada cut — the most flavor per ounce on the animal.", popular: "yes" },
-      { id: "tritip", name: "Tri-tip", help: "The Santa Maria roast — grills like a giant steak, slices like a roast.", popular: "yes" },
-      { id: "flatiron", name: "Flat iron", help: "Cut from the shoulder — surprisingly tender, great on a grill.", popular: "yes" },
+      { id: "skirtsteak", name: "Skirt steak", help: "The carne asada cut, with the most flavor per ounce on the animal.", popular: "yes" },
+      { id: "tritip", name: "Tri-tip", help: "The Santa Maria roast. Grills like a giant steak, slices like a roast.", popular: "yes" },
+      { id: "flatiron", name: "Flat iron", help: "Cut from the shoulder. Surprisingly tender, great on a grill.", popular: "yes" },
     ],
   },
   {
     id: "workhorse", title: "The workhorse cuts",
-    intro: "Not glamorous — just dinner, prepped and ready. Most folks send these to the grinder.",
+    intro: "Not glamorous, just dinner, prepped and ready. Most folks send these to the grinder.",
     cuts: [
-      { id: "cubesteak", name: "Cube steak", help: "Round steak run through the tenderizer — chicken-fried steak night, solved.", popular: "grind" },
+      { id: "cubesteak", name: "Cube steak", help: "Round steak run through the tenderizer. Chicken-fried steak night, solved.", popular: "grind" },
       { id: "stewmeat", name: "Stew meat", help: "Pre-cubed for chili and stew. No knife work on a weeknight.", popular: "grind" },
-      { id: "eyeofround", name: "Eye of round", help: "A very lean little roast — best sliced thin, or ground if lean roasts aren't your thing.", popular: "grind" },
+      { id: "eyeofround", name: "Eye of round", help: "A very lean little roast. Best sliced thin, or ground if lean roasts aren't your thing.", popular: "grind" },
     ],
   },
 ];
@@ -379,18 +379,18 @@ export const PATTY_NOTE = "30 lb minimum · $0.50/lb additional, per the butcher
 
 export const ORGANS = [
   { id: "liver", label: "Liver", note: "Sliced and frozen flat." },
-  { id: "heart", label: "Heart", note: "Lean — tastes like steak, grills well." },
+  { id: "heart", label: "Heart", note: "Lean. Tastes like steak, grills well." },
   { id: "tongue", label: "Tongue", note: "Braised for tacos de lengua." },
   { id: "oxtail", label: "Ox tail", note: "The best braising cut on the animal." },
   { id: "soupbones", label: "Soup bones", note: "Bone broth for the year." },
   { id: "bones", label: "Bones", note: "Extra bones beyond the soup cut." },
 ];
 
-/* Fat for tallow is a special request — it is not a box on the CCMC form,
+/* Fat for tallow is a special request: it is not a box on the CCMC form,
    so it rides along on the special-requests page and the call to the butcher. */
 export const TALLOW = {
   label: "Fat for tallow",
-  note: "Ask for the trimmed fat and render your own tallow — the best thing you'll ever fry a potato in. Not a box on the butcher's form, so we send it over as a special request.",
+  note: "Ask for the trimmed fat and render your own tallow. It's the best thing you'll ever fry a potato in. Not a box on the butcher's form, so we send it over as a special request.",
 };
 
 /* ---------------- primal map (landing/how-it-works) ---------------- */
@@ -409,68 +409,67 @@ export const PRIMALS: Primal[] = [
     id: "chuck", name: "Chuck",
     where: "The front shoulder. Chuck roasts, chuck steaks, or the best ground beef there is.",
     photo: u("photo-1448907503123-67254d59ca4f", 700), photoAlt: "Raw chuck roast",
-    counts: { quarter: "4–6 chuck roasts, or ~15 lb ground", half: "9–12 chuck roasts, or ~32 lb ground", whole: "18–25 chuck roasts, or ~65 lb ground" },
+    counts: { quarter: "4-6 chuck roasts, or ~15 lb ground", half: "9-12 chuck roasts, or ~32 lb ground", whole: "18-25 chuck roasts, or ~65 lb ground" },
   },
   {
     id: "rib", name: "Rib",
-    where: "Prime rib roast, bone-in rib steaks, or boneless ribeyes — your call on the cut sheet.",
+    where: "Prime rib roast, bone-in rib steaks, or boneless ribeyes. Your call on the cut sheet.",
     photo: u("photo-1728042359930-c0145f0fd442", 700), photoAlt: "Marbled ribeye steak on butcher paper",
-    counts: { quarter: '4–7 ribeyes at 1", or 1 small prime rib', half: '9–14 ribeyes at 1", or 1–2 prime ribs', whole: '19–28 ribeyes at 1", or 2 prime ribs' },
+    counts: { quarter: '4-7 ribeyes at 1", or 1 small prime rib', half: '9-14 ribeyes at 1", or 1-2 prime ribs', whole: '19-28 ribeyes at 1", or 2 prime ribs' },
   },
   {
     id: "loin", name: "Short Loin",
-    where: "T-bones — or NY strips plus true filet mignon, separated.",
+    where: "T-bones, or NY strips plus true filet mignon, separated.",
     photo: u("photo-1551028150-64b9f398f678", 700), photoAlt: "Raw T-bone steak",
-    counts: { quarter: '4–6 T-bones at 1", or 3–6 strips + 2–4 filets', half: '8–12 T-bones at 1", or 7–11 strips + 4–8 filets', whole: '16–24 T-bones at 1", or 14–21 strips + 9–16 filets' },
+    counts: { quarter: '4-6 T-bones at 1", or 3-6 strips + 2-4 filets', half: '8-12 T-bones at 1", or 7-11 strips + 4-8 filets', whole: '16-24 T-bones at 1", or 14-21 strips + 9-16 filets' },
   },
   {
     id: "sirloin", name: "Sirloin",
     where: "The weeknight steaks, plus the sirloin tip.",
     photo: u("photo-1603048297172-c92544798d5a", 700), photoAlt: "Raw sirloin steak",
-    counts: { quarter: "3–5 sirloin steaks + tip roast", half: "6–9 sirloin steaks + tip roasts", whole: "13–19 sirloin steaks + tip roasts" },
+    counts: { quarter: "3-5 sirloin steaks + tip roast", half: "6-9 sirloin steaks + tip roasts", whole: "13-19 sirloin steaks + tip roasts" },
   },
   {
     id: "round", name: "Round",
-    where: "Top round, bottom round, eye of round — the lean roasts, cube steak, and a lot of ground.",
+    where: "Top round, bottom round, eye of round: the lean roasts, cube steak, and a lot of ground.",
     photo: u("photo-1547050605-2f268cd5daf0", 700), photoAlt: "Lean round roast",
-    counts: { quarter: "2–4 roasts + cube steak + ~10 lb ground", half: "4–7 roasts + cube steak + ~20 lb ground", whole: "8–14 roasts + cube steak + ~40 lb ground" },
+    counts: { quarter: "2-4 roasts + cube steak + ~10 lb ground", half: "4-7 roasts + cube steak + ~20 lb ground", whole: "8-14 roasts + cube steak + ~40 lb ground" },
   },
   {
     id: "brisket", name: "Brisket",
     where: "The chest. The barbecue project.",
     photo: u("photo-1583549323189-5a3335634f4e", 700), photoAlt: "Whole packer brisket",
-    counts: { quarter: "Half a brisket (~4–6 lb)", half: "1 brisket (~10–12 lb)", whole: "2 briskets" },
+    counts: { quarter: "Half a brisket (~4-6 lb)", half: "1 brisket (~10-12 lb)", whole: "2 briskets" },
   },
   {
     id: "plate", name: "Short Ribs & Plate",
     where: "English-cut or Korean-cut short ribs, plus skirt steak.",
     photo: u("photo-1695088224287-bb10a886fce4", 700), photoAlt: "Bone-in short ribs",
-    counts: { quarter: "4–5 rib pieces + skirt", half: "8–10 rib pieces + skirt", whole: "16–20 rib pieces + 2 skirts" },
+    counts: { quarter: "4-5 rib pieces + skirt", half: "8-10 rib pieces + skirt", whole: "16-20 rib pieces + 2 skirts" },
   },
   {
     id: "flank", name: "Flank & Tri-Tip",
-    where: "The fast-cooking cuts — fajitas, carne asada, Santa Maria tri-tip.",
+    where: "The fast-cooking cuts: fajitas, carne asada, Santa Maria tri-tip.",
     photo: u("photo-1652690772694-ac68867c30f1", 700), photoAlt: "Flank steak showing long grain",
-    counts: { quarter: "1–2 of flank / skirt / tri-tip / flat iron", half: "1 each: flank, skirt, tri-tip, flat iron", whole: "2 each: flank, skirt, tri-tip, flat iron" },
+    counts: { quarter: "1-2 of flank / skirt / tri-tip / flat iron", half: "1 each: flank, skirt, tri-tip, flat iron", whole: "2 each: flank, skirt, tri-tip, flat iron" },
   },
   {
     id: "shank", name: "Shanks & Bones",
     where: "Cross-cut shanks with marrow, soup bones, and the broth program.",
     photo: u("photo-1628543108325-1c27cd7246b3", 700), photoAlt: "Cross-cut beef shank with marrow bone",
-    counts: { quarter: "2–3 cross-cut shanks + bones", half: "4–6 cross-cut shanks + bones", whole: "8–12 cross-cut shanks + bones" },
+    counts: { quarter: "2-3 cross-cut shanks + bones", half: "4-6 cross-cut shanks + bones", whole: "8-12 cross-cut shanks + bones" },
   },
 ];
 
 /* ---------------- versus the grocery store ----------------
-   Per-cut shelf prices for the savings table. These are SURVEY
-   ESTIMATES for Front Range grocery stores, calibrated so the
-   weighted average lands near the USDA Choice retail average
-   already quoted on the site. Replace the
-   `retail` numbers with real observed shelf prices before leaning
-   on the savings figure in advertising.
+   Per-cut shelf prices for the savings table: the Ranch Cuts model's
+   King Soopers basket (~/Documents/RanchCuts/model/build_model.py,
+   "Grocery Basket" tab). The cut mix follows the NCBA carcass mix,
+   41% ground and stew, and the pounds sum to TAKEHOME_TYP (630 lb).
+   The basket totals $7,233, which is GROCERY_BASKET_PER_LB ($11.48/lb).
 
    `lbsWhole` is the take-home pounds of that cut from one typical
-   animal; the list sums to TAKEHOME_TYP.                        */
+   animal. Landing looks up the "rib" and "ground" ids by name.     */
 
 export interface GroceryCut {
   id: string;
@@ -481,21 +480,27 @@ export interface GroceryCut {
 }
 
 /* Regular shelf prices (no sale, coupon or loyalty pricing) read off
-   kingsoopers.com for the Denver area on the date below. King Soopers
+   kingsoopers.com for the Denver area on the dates below. King Soopers
    is the Front Range's biggest grocer, so it's the fairest single
-   yardstick. Re-check these each season — beef moves. */
-export const GROCERY_SOURCE = { store: "King Soopers", where: "Denver", date: "September 30, 2026" };
+   yardstick. Two cuts it doesn't stock are noted on their rows.
+   Re-check these each season; beef moves. */
+export const GROCERY_SOURCE = { store: "King Soopers", where: "Denver", date: "September 30 to October 1, 2026" };
 
 export const GROCERY_CUTS: GroceryCut[] = [
-  { id: "rib",     name: "Ribeye & rib steaks",     store: "Choice boneless ribeye",       retail: 20.99, lbsWhole: 20 },
-  { id: "loin",    name: "T-bone, strip & filet",   store: "Choice boneless strip steak",  retail: 17.99, lbsWhole: 25 },
-  { id: "sirloin", name: "Sirloin steaks",          store: "Choice top sirloin steak",     retail: 13.99, lbsWhole: 22 },
-  { id: "fast",    name: "Flank, skirt & tri-tip",  store: "Choice flank steak",           retail: 14.99, lbsWhole: 20 },
-  { id: "roast",   name: "Chuck & round roasts",    store: "Choice chuck roast",           retail: 9.99,  lbsWhole: 120 },
-  { id: "stew",    name: "Stew meat & cube steak",  store: "Choice beef for stew",         retail: 10.00, lbsWhole: 25 },
-  { id: "ribs",    name: "Short ribs & shanks",     store: "Boneless short ribs",          retail: 11.99, lbsWhole: 28 },
-  { id: "brisket", name: "Brisket",                 store: "Flat-cut brisket",             retail: 8.99,  lbsWhole: 20 },
-  { id: "ground",  name: "Ground beef",             store: "80/20 ground beef, 1 lb tray", retail: 7.49,  lbsWhole: 350 },
+  { id: "rib",        name: "Ribeye & rib steaks",               store: "Choice boneless ribeye",                                         retail: 20.99, lbsWhole: 38 },
+  { id: "filet",      name: "Tenderloin & filet mignon",         store: "Tenderloin steak (Whole Foods; King Soopers doesn't stock it)", retail: 40.99, lbsWhole: 12 },
+  { id: "strip",      name: "NY strip",                          store: "Choice strip steak",                                             retail: 17.99, lbsWhole: 26 },
+  { id: "tbone",      name: "T-bone & porterhouse",              store: "Priced at strip (not stocked)",                                  retail: 17.99, lbsWhole: 18 },
+  { id: "sirloin",    name: "Top sirloin",                       store: "Choice top sirloin",                                             retail: 13.99, lbsWhole: 30 },
+  { id: "fast",       name: "Flank, skirt, flat iron & tri-tip", store: "Flank, skirt and flat iron, averaged",                           retail: 13.99, lbsWhole: 22 },
+  { id: "roundsteak", name: "Round & sirloin-tip steaks",        store: "Top round and petite sirloin",                                   retail: 11.49, lbsWhole: 30 },
+  { id: "chuck",      name: "Chuck roasts",                      store: "Choice chuck roast",                                             retail: 9.99,  lbsWhole: 75 },
+  { id: "roast",      name: "Round & rump roasts",               store: "Bottom round roast",                                             retail: 10.99, lbsWhole: 64 },
+  { id: "brisket",    name: "Brisket",                           store: "Flat-cut brisket",                                               retail: 8.99,  lbsWhole: 20 },
+  { id: "ribs",       name: "Short ribs",                        store: "Short ribs, bone-in and boneless",                               retail: 12.49, lbsWhole: 22 },
+  { id: "shank",      name: "Shanks, oxtail & soup bones",       store: "Hind shank and oxtail",                                          retail: 10.99, lbsWhole: 15 },
+  { id: "ground",     name: "Ground beef",                       store: "80/20 ground beef",                                              retail: 7.49,  lbsWhole: 228 },
+  { id: "stew",       name: "Stew meat",                         store: "Beef for stew",                                                  retail: 10.00, lbsWhole: 30 },
 ];
 
 export interface SavingsRow {
@@ -574,7 +579,7 @@ export const ASSET = (p: string) => `${import.meta.env.BASE_URL}${p.replace(/^\/
 export const money = (n: number) =>
   "$" + n.toLocaleString(undefined, { maximumFractionDigits: 0 });
 
-/** Signed dollars, for the savings column — a cut that costs about the
+/** Signed dollars, for the savings column: a cut that costs about the
     same at the store should read as "about even", not as "$-14". */
 export const moneySigned = (n: number) => {
   if (Math.abs(n) < 10) return "about even";

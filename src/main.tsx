@@ -7,14 +7,18 @@ import HowItWorks from "./pages/HowItWorks";
 import About from "./pages/About";
 import Find from "./pages/Find";
 import Local from "./pages/Local";
-import Order from "./pages/Order";
-import Track from "./pages/Track";
-import Customers from "./pages/Customers";
-import CustomerTicket from "./pages/CustomerTicket";
 import "./styles/global.css";
 
-/* the national map carries the state outlines (~190 KB), so it loads on demand */
+/* the national map carries the state outlines (~190 KB) and the order
+   flow carries pdf-lib (~500 KB), so they load on demand */
 const MapPage = lazy(() => import("./pages/MapPage"));
+const Order = lazy(() => import("./pages/Order"));
+const Track = lazy(() => import("./pages/Track"));
+const Customers = lazy(() => import("./pages/Customers"));
+const CustomerTicket = lazy(() => import("./pages/CustomerTicket"));
+
+const wait = <main className="page section wide mute">Loading...</main>;
+const L = (el: React.ReactNode) => <Suspense fallback={wait}>{el}</Suspense>;
 
 function Root() {
   return (
@@ -32,15 +36,15 @@ const routes = [
       { path: "/", element: <Landing /> },
       { path: "/find", element: <Find /> },
       { path: "/find/:zip", element: <Find /> },
-      { path: "/map", element: <Suspense fallback={<main className="page section wide">Loading the map...</main>}><MapPage /></Suspense> },
+      { path: "/map", element: L(<MapPage />) },
       { path: "/local/:slug", element: <Local /> },
       { path: "/how-it-works", element: <HowItWorks /> },
       { path: "/about", element: <About /> },
-      { path: "/order", element: <Order /> },
-      { path: "/track", element: <Track /> },
-      { path: "/track/:code", element: <Track /> },
-      { path: "/customers", element: <Customers /> },
-      { path: "/customers/ticket/:code", element: <CustomerTicket /> },
+      { path: "/order", element: L(<Order />) },
+      { path: "/track", element: L(<Track />) },
+      { path: "/track/:code", element: L(<Track />) },
+      { path: "/customers", element: L(<Customers />) },
+      { path: "/customers/ticket/:code", element: L(<CustomerTicket />) },
     ],
   },
 ];

@@ -172,8 +172,10 @@ export async function lookupZip(zip: string): Promise<ZipPlace | null> {
    - reachable: same state, a longer drive (still allowed: same-state rule holds)
    - planned: no live partnership in the state; a planned metro is within 120 miles
    - waitlist: nothing nearby yet                                                  */
+type Served = { partnership: Partnership; miles: number; drive: number };
 export type Coverage =
-  | { kind: "covered" | "reachable"; partnership: Partnership; miles: number; drive: number }
+  | ({ kind: "covered" } & Served)
+  | ({ kind: "reachable" } & Served)
   | { kind: "planned"; metro: PlannedMetro; miles: number; nearestLive: { partnership: Partnership; miles: number } }
   | { kind: "waitlist"; nearestPlanned: { metro: PlannedMetro; miles: number } | null; nearestLive: { partnership: Partnership; miles: number } };
 
@@ -186,7 +188,8 @@ export function coverageFor(p: { lat: number; lon: number; state: string }): Cov
   const inState = live.find((x) => x.partnership.state === p.state);
   if (inState) {
     const drive = roadMiles(inState.miles);
-    return { kind: drive <= EASY_DRIVE_MILES ? "covered" : "reachable", partnership: inState.partnership, miles: inState.miles, drive };
+    const served = { partnership: inState.partnership, miles: inState.miles, drive };
+    return drive <= EASY_DRIVE_MILES ? { kind: "covered", ...served } : { kind: "reachable", ...served };
   }
   const planned = PLANNED.map((m) => ({ metro: m, miles: milesBetween(p, m) })).sort((a, b) => a.miles - b.miles);
   const near = planned.find((x) => x.miles <= PLANNED_RADIUS_MILES && x.metro.states.includes(p.state));

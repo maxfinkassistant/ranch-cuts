@@ -1,4 +1,4 @@
-/* "3 of 7 steers already reserved" — one small steer per animal in
+/* "3 of 7 steers already reserved": one small steer per animal in
    the season, each filling up as its shares are spoken for. */
 
 import { useId } from "react";
@@ -53,12 +53,12 @@ export default function SteerTracker({ compact = false }: { compact?: boolean })
     : full
       ? <>All {capacity} {season.name} steers are reserved</>
       : reserved === 0
-        ? <>{capacity} steers this {season.name} — be the first</>
+        ? <>{capacity} steers this {season.name}. Be the first.</>
         : <><b><SteerCount n={reserved} /></b> of {capacity} steers already reserved</>;
 
   return (
     <div className={"tracker" + (compact ? " compact" : "")}>
-      <span className="tag">{season.label} harvest · pickup est. {season.pickupShort}</span>
+      <span className="tag">{season.label} harvest · pickup {season.pickupText}</span>
       <div className="d tracker-count">{headline}</div>
       <div
         className="tracker-herd"
@@ -73,12 +73,12 @@ export default function SteerTracker({ compact = false }: { compact?: boolean })
       <p className="tracker-note">
         {full ? (
           <>
-            New orders are reserved from our <b>{next.name} harvest</b> — pickup {next.pickupText}.
+            New orders are reserved from the <b>{next.name} harvest</b>, with pickup {next.pickupText}.
           </>
         ) : (
           <>
             <b>Get yours today.</b> Once all {capacity} are spoken for, new orders are reserved
-            from our {next.name} harvest — pickup {next.pickupText}.
+            from the {next.name} harvest, with pickup {next.pickupText}.
           </>
         )}
       </p>

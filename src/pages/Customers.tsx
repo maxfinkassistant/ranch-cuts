@@ -1,13 +1,15 @@
-/* Back office at /customers — the built-in CRM. Reads the same
-   orders store the storefront writes. Passcode gate is a
-   placeholder until real auth lands. */
+/* Ranch office at /customers: the built-in CRM for one live
+   partnership (Ranch Cuts Denver). Reads the same orders store the
+   order flow writes. Passcode gate is a placeholder until real
+   auth lands. */
 
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  SHARES, SEASONS, CURRENT_SEASON, DEPOSIT, HANGING_RATE, seasonOf, money, money2,
+  SHARES, SEASONS, CURRENT_SEASON, DEPOSIT, LISTING_NAME, PROCESSOR, seasonOf, money, money2,
   type SeasonId,
 } from "../data/config";
+import { LIVE } from "../data/partnerships";
 import {
   listOrders, updateOrder, updateOrderStatus, getNotes, setNote, STATUS_STEPS,
   listSteers, saveSteer, deleteSteer, getSettings, saveSettings, reservedSteers,
@@ -25,35 +27,35 @@ import SteerTracker from "../components/SteerTracker";
 
 type Tab = "roster" | "steers" | "customers";
 
-/** What the order actually costs once its steer has been weighed —
-    at that animal's rate, which may sit under the standard one. */
-function actualTotal(o: Order, steer?: Steer): number | null {
-  return finalPrice(o.share, steer)?.total ?? null;
-}
-
 const fmtDate = (iso?: string) =>
   iso ? new Date(iso + "T12:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "";
 
-const AUTH_KEY = "tr.admin.v1";
-const KEY_KEY = "tr.admin.key";
+const AUTH_KEY = "rc.admin.v1";
+const KEY_KEY = "rc.admin.key";
 /* Local demo mode only (no backend). With a backend, the key is
    validated server-side and never lives in this code. */
 const DEMO_PASSCODE = "KERSEY";
 
 function exportCsv(orders: Order[], steers: Steer[]) {
   const head = [
-    "code", "status", "name", "email", "phone", "address", "share", "harvest",
+    "code", "partnership", "status", "name", "email", "phone", "address", "share", "harvest",
     "steer", "steer_hanging_lbs", "est_ready", "est_takehome_lbs",
-    "total", "actual_total", "deposit", "balance", "created",
+    "animal_to_ranch", "animal_discount", "processing_to_butcher", "processing_is",
+    "total", "deposit_to_ranch", "animal_balance_to_ranch", "due_at_pickup", "created",
   ];
   const rows = orders.map((o) => {
     const steer = steers.find((s) => s.id === o.steer);
-    const actual = actualTotal(o, steer);
+    const sh = SHARES[o.share];
+    const p = finalPrice(o.share, steer);
+    const animal = p?.animal ?? sh.animal;
+    const processing = p?.processing ?? sh.processing;
+    const total = p?.total ?? sh.total;
     return [
-      o.code, o.status, o.name, o.email, o.phone, o.address,
+      o.code, o.partnership ?? LIVE.slug, o.status, o.name, o.email, o.phone, o.address,
       o.share, seasonOf(o).label,
-      o.steer ?? "", steer?.hangingWeight ?? "", steer?.readyDate ?? "", SHARES[o.share].takehome,
-      SHARES[o.share].total, actual ?? "", DEPOSIT, (actual ?? SHARES[o.share].total) - DEPOSIT,
+      o.steer ?? "", steer?.hangingWeight ?? "", steer?.readyDate ?? "", sh.takehome,
+      animal, p?.discount ?? 0, processing, p ? "actual" : "estimate",
+      total, DEPOSIT, animal - DEPOSIT, total - DEPOSIT,
       new Date(o.createdAt).toISOString().slice(0, 10),
     ];
   });
@@ -63,7 +65,7 @@ function exportCsv(orders: Order[], steers: Steer[]) {
   const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
   const a = document.createElement("a");
   a.href = url;
-  a.download = "thunderbolt-orders.csv";
+  a.download = "ranchcuts-denver-orders.csv";
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -78,33 +80,32 @@ function SteerRow({
   onSave: (next: Steer, originalId?: string) => Promise<void> | void;
   onRemove?: () => void;
 }) {
-  const blank = { id: "", season: CURRENT_SEASON as SeasonId, hangingWeight: "", readyDate: "", rate: "" };
+  const blank = { id: "", season: CURRENT_SEASON as SeasonId, hangingWeight: "", readyDate: "", discount: "" };
   const from = (s?: Steer) =>
     s ? {
       id: s.id, season: s.season,
       hangingWeight: s.hangingWeight ? String(s.hangingWeight) : "",
       readyDate: s.readyDate ?? "",
-      rate: s.rate ? String(s.rate) : "",
+      discount: s.discount ? String(s.discount) : "",
     } : blank;
   const [d, setD] = useState(() => from(steer));
   const [busy, setBusy] = useState(false);
-  useEffect(() => { setD(from(steer)); }, [steer?.id, steer?.season, steer?.hangingWeight, steer?.readyDate, steer?.rate]);
+  useEffect(() => { setD(from(steer)); }, [steer?.id, steer?.season, steer?.hangingWeight, steer?.readyDate, steer?.discount]);
 
   const id = d.id.trim();
   const dirty = JSON.stringify(d) !== JSON.stringify(from(steer));
   const clash = taken.includes(id);
   const weight = d.hangingWeight.trim() === "" ? undefined : Number(d.hangingWeight);
   const weightBad = weight !== undefined && !(weight > 0);
-  const rate = d.rate.trim() === "" ? undefined : Number(d.rate);
-  const rateBad = rate !== undefined && !(rate > 0);
-  const rateCut = rate !== undefined && rate < HANGING_RATE;
+  const discount = d.discount.trim() === "" ? undefined : Number(d.discount);
+  const discountBad = discount !== undefined && !(discount >= 0 && discount < SHARES.whole.animal);
   const claimed = linked.reduce((t, o) => t + SHARES[o.share].frac, 0);
   const label = steer ? `steer ${steer.id}` : "new steer";
 
   const save = async () => {
     setBusy(true);
     try {
-      await onSave({ id, season: d.season, hangingWeight: weight, readyDate: d.readyDate || undefined, rate }, steer?.id);
+      await onSave({ id, season: d.season, hangingWeight: weight, readyDate: d.readyDate || undefined, discount: discount || undefined }, steer?.id);
       if (!steer) setD(blank);
     } finally {
       setBusy(false);
@@ -130,18 +131,16 @@ function SteerRow({
           onChange={(e) => setD({ ...d, hangingWeight: e.target.value })} />
       </td>
       <td>
-        <input className="admin-input mono" type="number" min="0" step="0.05" inputMode="decimal"
-          value={d.rate} placeholder={HANGING_RATE.toFixed(2)} aria-label={`Price per pound for ${label}`}
-          onChange={(e) => setD({ ...d, rate: e.target.value })} />
-        {rateBad
-          ? <span className="admin-sub" style={{ color: "var(--rust)" }}>Must be above 0</span>
-          : rateCut
+        <input className="admin-input mono" type="number" min="0" step="25" inputMode="decimal"
+          value={d.discount} placeholder="0" aria-label={`Animal discount in dollars for ${label}`}
+          onChange={(e) => setD({ ...d, discount: e.target.value })} />
+        {discountBad
+          ? <span className="admin-sub" style={{ color: "var(--rust)" }}>0 to {money(SHARES.whole.animal - 1)}</span>
+          : discount
             ? <span className="admin-sub" style={{ color: "var(--sage)" }}>
-                {money2(HANGING_RATE - rate!)}/lb off standard
+                {money(Math.round(discount / 2))} off a half, {money(Math.round(discount / 4))} off a quarter
               </span>
-            : rate !== undefined && rate > HANGING_RATE
-              ? <span className="admin-sub" style={{ color: "var(--rust)" }}>Above standard</span>
-              : <span className="admin-sub">Blank = standard</span>}
+            : <span className="admin-sub">Blank = none</span>}
       </td>
       <td>
         <input className="admin-input" type="date" value={d.readyDate} aria-label={`Estimated ready date for ${label}`}
@@ -160,7 +159,7 @@ function SteerRow({
         )}
       </td>
       <td style={{ whiteSpace: "nowrap" }}>
-        <button className="btn btn-ghost" disabled={busy || !id || clash || weightBad || rateBad || !dirty} onClick={save}>
+        <button className="btn btn-ghost" disabled={busy || !id || clash || weightBad || discountBad || !dirty} onClick={save}>
           {busy ? "Saving…" : steer ? "Save" : "Add steer"}
         </button>
         {onRemove && (
@@ -200,7 +199,7 @@ function SettingsForm({
 
   return (
     <div className="steer-settings-form">
-      <span className="tag" style={{ color: "var(--rust)" }}>Front-page tracker</span>
+      <span className="tag" style={{ color: "var(--rust)" }}>Steer tracker</span>
       <div className="pair">
         <div className="field">
           <label htmlFor="ss-cap">Steers this {season}</label>
@@ -208,14 +207,14 @@ function SettingsForm({
             disabled={disabled} onChange={(e) => setCapacity(e.target.value)} />
         </div>
         <div className="field">
-          <label htmlFor="ss-off">Reserved off the site</label>
+          <label htmlFor="ss-off">Reserved outside Ranch Cuts</label>
           <input id="ss-off" type="number" min="0" step="0.25" inputMode="decimal" value={offline}
             disabled={disabled} onChange={(e) => setOffline(e.target.value)} />
         </div>
       </div>
       <p className="small mute">
-        The tracker counts {season} orders placed on the site — {steerCount(online)} steers' worth
-        right now — plus whatever you've promised off the site. Enter that in steers: a half
+        The tracker counts {season} orders placed through Ranch Cuts ({steerCount(online)} steers' worth
+        right now), plus whatever the ranch has promised outside it. Enter that in steers: a half
         is 0.5, a quarter is 0.25.
       </p>
       <div>
@@ -255,7 +254,7 @@ export default function Customers() {
   const steersReady = !live || !remote || remote.steers !== undefined;
   const notes = useMemo(() => getNotes(), [tick]);
 
-  /* pull the roster from the ranch's order system */
+  /* pull the roster from the Ranch Cuts order system */
   useEffect(() => {
     if (!authed || !live) return;
     let alive = true;
@@ -298,16 +297,16 @@ export default function Customers() {
   const storeSettings = (next: SeasonSettings) =>
     commit(() => saveSettings(next), () => pushSettings(adminKey, next), (o) => ({ ...o, settings: next }));
 
-  /* The final invoice goes out from here, not automatically — Josh
+  /* The final invoice goes out from here, not automatically: the ranch
      decides when a steer's numbers are settled enough to bill on. */
   const emailInvoice = async (o: Order) => {
     const steer = steers.find((x) => x.id === o.steer);
     const price = finalPrice(o.share, steer);
     if (!price) return;
-    const ask = price.adjusted
-      ? `Email ${o.name} their final invoice? ${money(price.balance)} due at ${money2(price.rate)}/lb `
-        + `(down from ${money2(price.standardRate)}), and they'll be told why.`
-      : `Email ${o.name} their final invoice? ${money(price.balance)} due at ${money2(price.rate)}/lb.`;
+    const ask =
+      `Email ${o.name} their final invoice? Due at pickup: ${money(price.animalBalance)} to ${LIVE.ranch.name}`
+      + (price.discount > 0 ? ` (after a ${money(price.discount)} discount)` : "")
+      + ` plus ${money2(price.processing)} processing to ${LIVE.butcher.name}.`;
     if (!window.confirm(ask)) return;
     setInvoiceBusy(o.code);
     setLoadError(null);
@@ -343,7 +342,7 @@ export default function Customers() {
   if (!authed) {
     return (
       <main className="page confirm-wrap" style={{ maxWidth: 420 }}>
-        <div className="tag" style={{ color: "var(--rust)", marginBottom: "var(--space-md)" }}>Back office</div>
+        <div className="tag" style={{ color: "var(--rust)", marginBottom: "var(--space-md)" }}>Ranch office: {LISTING_NAME}</div>
         <h2 className="d">Ranch hands only.</h2>
         <form
           className="decision"
@@ -373,26 +372,35 @@ export default function Customers() {
     }, {}),
   ).sort((a, b) => a.name.localeCompare(b.name));
 
+  /* the two sellers, kept apart: animal shares are the ranch's sales,
+     processing is the butcher's (estimate until each steer is weighed) */
   const totals = orders.reduce(
-    (t, o) => ({
-      hanging: t.hanging + SHARES[o.share].hanging,
-      revenue: t.revenue + SHARES[o.share].total,
-      deposits: t.deposits + DEPOSIT,
-    }),
-    { hanging: 0, revenue: 0, deposits: 0 },
+    (t, o) => {
+      const p = finalPrice(o.share, steers.find((x) => x.id === o.steer));
+      return {
+        hanging: t.hanging + SHARES[o.share].hanging,
+        animal: t.animal + (p?.animal ?? SHARES[o.share].animal),
+        processing: t.processing + (p?.processing ?? SHARES[o.share].processing),
+        deposits: t.deposits + DEPOSIT,
+      };
+    },
+    { hanging: 0, animal: 0, processing: 0, deposits: 0 },
   );
 
   return (
     <main className="page order-main" style={{ maxWidth: 1100 }}>
       <div className="admin-bar">
         <div>
-          <div className="tag" style={{ color: "var(--rust)" }}>Back office · {SEASONS[CURRENT_SEASON].label}</div>
-          <h2 className="d" style={{ fontSize: "2rem" }}>Customers &amp; orders</h2>
+          <div className="tag" style={{ color: "var(--rust)" }}>
+            {SEASONS[CURRENT_SEASON].label}. Beef from {LIVE.ranch.name}, cut at {LIVE.butcher.name}
+          </div>
+          <h2 className="d" style={{ fontSize: "2rem" }}>Ranch office: {LISTING_NAME}</h2>
           <p className="small mute" style={{ marginTop: 4 }}>
-            {orders.length} orders · ~{totals.hanging.toLocaleString()} lb hanging committed ·
-            {" "}{money(totals.revenue)} booked ({money(totals.deposits)} in deposits)
-            {live && !remote && !loadError && " · loading from the order sheet…"}
-            {!live && " · local demo mode"}
+            {orders.length} orders, ~{totals.hanging.toLocaleString()} lb hanging equivalent committed.
+            {" "}{money(totals.animal)} in animal shares to {LIVE.ranch.name} ({money(totals.deposits)} in deposits),
+            {" "}about {money(totals.processing)} in processing to {LIVE.butcher.short}.
+            {live && !remote && !loadError && " Loading from the order sheet…"}
+            {!live && " Local demo mode."}
           </p>
           {loadError && <p className="small" style={{ color: "var(--rust)" }}>Order system: {loadError}</p>}
         </div>
@@ -435,7 +443,7 @@ export default function Customers() {
                     <div style={{ fontWeight: 600 }}>{o.name}</div>
                     <div className="small mute">{o.email}{o.phone && ` · ${o.phone}`}</div>
                   </td>
-                  <td>{SHARES[o.share].label} · ~{SHARES[o.share].takehome} lb</td>
+                  <td>{SHARES[o.share].label}, ~{SHARES[o.share].takehome} lb</td>
                   <td>
                     <select
                       className="admin-select"
@@ -463,13 +471,14 @@ export default function Customers() {
                   <td className="mono">
                     {money(actual ?? SHARES[o.share].total)}
                     <span className="admin-sub">
-                      {price
-                        ? `${price.shareLbs} lb × ${money2(price.rate)}`
-                        : "estimate"}
+                      Ranch {money(price?.animal ?? SHARES[o.share].animal)}
                     </span>
-                    {price?.adjusted && (
-                      <span className="admin-chip done">rate cut · saves {money(price.saved)}</span>
-                    )}
+                    <span className="admin-sub">
+                      Butcher {price ? money2(price.processing) : `~${money(SHARES[o.share].processing)}`}
+                    </span>
+                    {price?.discount ? (
+                      <span className="admin-chip done">{money(price.discount)} off the animal</span>
+                    ) : !price && <span className="admin-sub">estimate</span>}
                   </td>
                   <td>
                     <select
@@ -488,7 +497,7 @@ export default function Customers() {
                       disabled={pdfBusy === o.code}
                       onClick={async () => { setPdfBusy(o.code); try { await downloadCutSheet(o); } finally { setPdfBusy(null); } }}
                     >
-                      {pdfBusy === o.code ? "…" : "CCMC PDF"}
+                      {pdfBusy === o.code ? "…" : "Cut sheet PDF"}
                     </button>
                     <Link className="small" to={`/customers/ticket/${o.code}`}>Ticket</Link>
                     <button
@@ -514,11 +523,12 @@ export default function Customers() {
             </tbody>
           </table>
           <p className="small mute" style={{ marginTop: "var(--space-sm)" }}>
-            "CCMC PDF" downloads the customer's filled cutting-instructions form, ready to email
-            to order@ccmeatco.com. Status changes update the customer's tracking page immediately.
-            Link an order to a steer and, once that steer's hanging weight is in, the total
-            switches from the estimate to the real number. "Email invoice" sends the customer
-            that final number — including the lower price per pound, if you set one on the steer.
+            "Cut sheet PDF" downloads the customer's filled {PROCESSOR.name} cutting-instructions form,
+            ready to email to {PROCESSOR.cutSheetEmail}. Status changes update the customer's tracking
+            page immediately. Link an order to a steer and, once that steer's hanging weight is in, the
+            processing line switches from the estimate to the butcher's posted rates on the real weight.
+            The animal share stays fixed. "Email invoice" sends the customer both lines, including any
+            discount you set on the steer.
           </p>
         </div>
       )}
@@ -531,7 +541,7 @@ export default function Customers() {
               <span>
                 Steer tracking needs the updated order script. Paste the new
                 <span className="mono"> apps-script/Code.gs</span> into the Apps Script project and
-                deploy a new version — steps are in docs/SETUP-TODAY.md.
+                deploy a new version. Steps are at the top of that file.
               </span>
             </div>
           )}
@@ -550,7 +560,7 @@ export default function Customers() {
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th>Steer ID</th><th>Harvest</th><th>Hanging weight</th><th>Price per lb</th><th>Est. ready date</th><th>Orders</th><th></th>
+                  <th>Ear tag</th><th>Harvest</th><th>Hanging weight</th><th>Animal discount ($ off whole)</th><th>Est. ready date</th><th>Orders</th><th></th>
                 </tr>
               </thead>
               <tbody>
@@ -578,8 +588,10 @@ export default function Customers() {
             </table>
           </div>
           <p className="small mute" style={{ marginTop: "var(--space-sm)" }}>
-            Enter each steer as you know it — the ID first, hanging weight and ready date when you
-            have them. Link orders to a steer from the Harvest roster tab.
+            Enter each steer as you know it: the ear tag first, hanging weight and ready date when you
+            have them. Link orders to a steer from the Harvest roster tab. A discount is optional and
+            only lowers the animal share (dollars off a whole steer, split by share); processing is
+            always the butcher's to bill.
           </p>
         </div>
       )}

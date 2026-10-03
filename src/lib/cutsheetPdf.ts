@@ -3,7 +3,7 @@
    form's AcroForm dictionary. Runs entirely in the browser. */
 
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { SHARES, ASSET, TALLOW, PATTY_SIZES, ORGANS } from "../data/config";
+import { SHARES, ASSET, TALLOW, PATTY_SIZES, ORGANS, PROCESSOR } from "../data/config";
 import { effectiveExtra, type Order } from "./store";
 
 const X = "X";
@@ -12,7 +12,7 @@ function setText(form: ReturnType<PDFDocument["getForm"]>, name: string, value: 
   try {
     form.getTextField(name).setText(value);
   } catch {
-    /* field missing — leave a console note but don't break the download */
+    /* field missing: leave a console note but don't break the download */
     console.warn("cut sheet field not found:", name);
   }
 }
@@ -44,13 +44,13 @@ export async function fillCutSheet(order: Order, bytes: ArrayBuffer | Uint8Array
   const form = doc.getForm();
   const a = order.cutSheet;
 
-  /* header (Text1–5 = Date, Customer, Address, Email, Phone) */
+  /* header (Text1-5 = Date, Customer, Address, Email, Phone) */
   setText(form, "Text1", new Date(order.createdAt).toLocaleDateString());
   setText(form, "Text2", order.name);
   setText(form, "Text3", order.address);
   setText(form, "Text4", order.email);
   setText(form, "Text5", order.phone);
-  /* KILL DATE stays blank — harvest is seasonal, the butcher writes the day in */
+  /* KILL DATE stays blank: harvest is seasonal, the butcher writes the day in */
   setText(form, "CARCASS WEIGHT", `~${SHARES[order.share].hanging} lb (est)`);
   setText(form, "WHOLE   12   14", SHARES[order.share].label.toUpperCase());
 
@@ -63,7 +63,7 @@ export async function fillCutSheet(order: Order, bytes: ArrayBuffer | Uint8Array
       : { grind: true });
   fillRow(form, "ARM", m.arm?.mode === "roast" ? { roast: m.arm.roastSize } : { grind: true });
 
-  /* rib — three mutually exclusive rows */
+  /* rib: three mutually exclusive rows */
   if (a.rib.choice === "prime") {
     fillRow(form, "PRIME ROAST OR RIB STEAKS OR RIBEYE", { roast: "WHOLE" });
   } else if (a.rib.choice === "ribsteak") {
@@ -72,7 +72,7 @@ export async function fillCutSheet(order: Order, bytes: ArrayBuffer | Uint8Array
     fillRow(form, "PRIME ROAST OR RIB STEAKS OR RIBEYE_3", { thickness: a.rib.thickness, perPackage: a.rib.perPackage });
   }
 
-  /* loin — T-bone row or NY strip row (+ tenderloin) */
+  /* loin: T-bone row or NY strip row (+ tenderloin) */
   if (a.loin.choice === "tbone") {
     fillRow(form, "T BONE OR NY STRIP", { thickness: a.loin.thickness, perPackage: a.loin.perPackage });
   } else {
@@ -130,7 +130,7 @@ export async function fillCutSheet(order: Order, bytes: ArrayBuffer | Uint8Array
 }
 
 /* The CCMC form has no free-text box, so anything that doesn't fit
-   on it — tallow, patty poundage, the customer's own notes — gets
+   on it (tallow, patty poundage, the customer's own notes) gets
    its own page stapled to the back. */
 async function addSpecialRequestsPage(doc: PDFDocument, order: Order) {
   const a = order.cutSheet;
@@ -197,7 +197,7 @@ async function addSpecialRequestsPage(doc: PDFDocument, order: Order) {
     y -= 12;
   }
 
-  page.drawText("Questions on any of this? Call Colorado Custom Meat Co at 970-356-2333.", {
+  page.drawText(safe(`Questions on any of this? Call ${PROCESSOR.name} at ${PROCESSOR.phone}.`), {
     x: 54, y: Math.max(y, 60), size: 9.5, font: body, color: mute,
   });
 }

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { SHARES, DEPOSIT, PAYABLE_TO, RANCH_CONTACT, seasonOf, money, money2, type ShareId } from "../data/config";
+import { SHARES, PAYABLE_TO, RANCH_CONTACT, SUPPORT, LISTING_NAME, seasonOf, money, money2, type ShareId } from "../data/config";
+import { LIVE } from "../data/partnerships";
 import { getOrder, listOrders, listSteers, STATUS_STEPS, statusIndex, type Order } from "../lib/store";
-import { boxSummary, finalPrice, rateNote } from "../lib/estimate";
+import { boxSummary, finalPrice, discountNote, shareCost } from "../lib/estimate";
 import { downloadCutSheet } from "../lib/cutsheetPdf";
 import { backendConfigured, fetchTracking, type PublicPricing } from "../lib/api";
 
@@ -17,7 +18,7 @@ export default function Track() {
   const [loading, setLoading] = useState(false);
   const mine = listOrders();
 
-  /* local cache first; then the ranch's order system if configured */
+  /* local cache first; then the Ranch Cuts order system if configured */
   useEffect(() => {
     if (!code) return;
     const local = getOrder(code);
@@ -50,7 +51,7 @@ export default function Track() {
       <main className="page order-main" style={{ maxWidth: 760 }}>
         <div className="section-head">
           <h2 className="d">Track your order</h2>
-          <p>Enter the order code from your confirmation email — it looks like TR-4F7K2M.</p>
+          <p>Enter the order code from your confirmation email. It looks like RC-4F7K2M.</p>
         </div>
 
         {code && !order && (
@@ -63,7 +64,7 @@ export default function Track() {
           className="lookup"
           onSubmit={(e) => { e.preventDefault(); if (query.trim()) navigate(`/track/${query.trim().toUpperCase()}`); }}
         >
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="TR-______" aria-label="Order code" />
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="RC-______" aria-label="Order code" />
           <button className="btn btn-solid" type="submit">Look up</button>
         </form>
 
@@ -74,7 +75,7 @@ export default function Track() {
               {mine.map((o) => (
                 <Link key={o.code} to={`/track/${o.code}`} className="member" style={{ textDecoration: "none" }}>
                   <span className="who">{o.name}{o.sample ? " · sample" : ""}</span>
-                  <span className="what">{o.code} · {SHARES[o.share].label.toUpperCase()} · {seasonOf(o).label.toUpperCase()}</span>
+                  <span className="what">{o.code} · {SHARES[o.share].label.toUpperCase()}, {seasonOf(o).label.toUpperCase()}</span>
                 </Link>
               ))}
             </div>
@@ -98,7 +99,8 @@ export default function Track() {
      mode the steers are right here in the browser */
   const weighed = pricing ?? (backendConfigured() ? undefined : listSteers().find((s) => s.id === order.steer));
   const price = finalPrice(viewShare, weighed);
-  const note = rateNote(price);
+  const note = discountNote(price);
+  const est = shareCost(viewShare);
   const whenFor = (stepId: string): string => {
     switch (stepId) {
       case "reserved": return new Date(order.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" });
@@ -115,7 +117,10 @@ export default function Track() {
           <div className="tag" style={{ color: "var(--rust)", marginBottom: "var(--space-xs)" }}>Order {order.code}</div>
           <h2 className="d">{SHARES[viewShare].label} beef · {season.label}</h2>
           <p className="mute" style={{ marginTop: "var(--space-xs)" }}>
-            {order.name}{order.sample && " · sample order for demonstration"}
+            {LISTING_NAME}. Beef from {LIVE.ranch.name}, cut at {LIVE.butcher.name}.
+          </p>
+          <p className="mute" style={{ marginTop: 2 }}>
+            {order.name}{order.sample && ", sample order for demonstration"}
           </p>
           {order.sample && (
             <div className="group-note" style={{ marginTop: "var(--space-md)", marginBottom: 0 }}>
@@ -167,7 +172,10 @@ export default function Track() {
           {order.status === "reserved" && (
             <div className="group-note" style={{ marginTop: "var(--space-sm)", marginBottom: 0 }}>
               <span className="tag">Held</span>
-              <span>Your cut sheet can be adjusted until <strong>your steer goes to the butcher</strong>. Call or text Josh at 402-245-8195.</span>
+              <span>
+                Your cut sheet can be adjusted until <strong>your steer goes to the butcher</strong>.
+                Call or text {RANCH_CONTACT.name} at {LIVE.ranch.name}, {RANCH_CONTACT.phone}.
+              </span>
             </div>
           )}
         </div>
@@ -180,7 +188,7 @@ export default function Track() {
           </div>
           <div className="ticket-row"><span className="k">Share</span><span className="v">{SHARES[viewShare].label} beef</span></div>
           <div className="ticket-row"><span className="k">Harvest</span><span className="v">{season.label}</span></div>
-          <div className="ticket-row"><span className="k">Pickup</span><span className="v">{season.pickup}</span></div>
+          <div className="ticket-row"><span className="k">Pickup</span><span className="v">{season.pickup}, {LIVE.butcher.city}</span></div>
           <hr className="ticket-sep" />
           {lines.map((l) => (
             <div className="ticket-row" key={l.name}>
@@ -195,35 +203,43 @@ export default function Track() {
         </div>
       </div>
 
-      {price && (
+      {price ? (
         <div className="owed">
           <div className="owed-head">
             <span className="tag">Your final total</span>
-            <span className="small">Figured on your animal's actual hanging weight</span>
+            <span className="small">Your steer weighed in at {price.hangingLbs} lb hanging</span>
           </div>
           <div className="owed-rows">
             <div className="owed-row">
-              <span>Your share of the hang</span>
-              <b>{price.shareLbs} lb</b>
-            </div>
-            <div className="owed-row">
-              <span>Price per pound</span>
+              <span>Your share of the steer, sold by {LIVE.ranch.name} (fixed)</span>
               <b>
-                {money2(price.rate)}
-                {price.adjusted && <s className="owed-was">{money2(price.standardRate)}</s>}
+                {money(price.animal)}
+                {price.discount > 0 && <s className="owed-was">{money(price.animalList)}</s>}
               </b>
             </div>
             <div className="owed-row">
-              <span>Total</span>
-              <b>{money(price.total)}</b>
+              <span>
+                Processing by {LIVE.butcher.name}, billed by the butcher at its posted rates
+                <span className="of-sub">{price.processingLines.map((l) => `${l.label} ${money2(l.amount)}`).join("; ")}</span>
+              </span>
+              <b>{money2(price.processing)}</b>
             </div>
             <div className="owed-row">
-              <span>Deposit already paid</span>
-              <b>− {money(price.deposit)}</b>
+              <span>All in</span>
+              <b>{money2(price.total)}</b>
+            </div>
+            <div className="owed-row">
+              <span>Deposit already paid to {LIVE.ranch.name}</span>
+              <b>- {money(price.deposit)}</b>
             </div>
             <div className="owed-row total">
-              <span>Balance at pickup</span>
-              <b>{money(price.balance)}</b>
+              <span>
+                Due at pickup
+                <span className="of-sub">
+                  {money(price.animalBalance)} to {PAYABLE_TO}, {money2(price.processing)} to {LIVE.butcher.name}
+                </span>
+              </span>
+              <b>{money2(price.balance)}</b>
             </div>
           </div>
           {note && (
@@ -233,8 +249,47 @@ export default function Track() {
             </div>
           )}
           <p className="owed-fine">
-            Payable to {PAYABLE_TO} when you collect. Questions about any of it — call or text
-            {" "}{RANCH_CONTACT.name} at {RANCH_CONTACT.phone}.
+            The butcher's own invoice is final for processing. Ranch questions: {RANCH_CONTACT.name},
+            {" "}{RANCH_CONTACT.phone}. Anything else: {SUPPORT.email}.
+          </p>
+        </div>
+      ) : (
+        <div className="owed">
+          <div className="owed-head">
+            <span className="tag">What you'll pay</span>
+            <span className="small">Estimate until your steer is weighed</span>
+          </div>
+          <div className="owed-rows">
+            <div className="owed-row">
+              <span>Your share of the steer, sold by {LIVE.ranch.name} (fixed)</span>
+              <b>{money(est.animal)}</b>
+            </div>
+            <div className="owed-row">
+              <span>Processing by {LIVE.butcher.name}, billed by the butcher at its posted rates (estimate)</span>
+              <b>{money(est.processing)}</b>
+            </div>
+            <div className="owed-row">
+              <span>All in (estimate)</span>
+              <b>{money(est.total)}</b>
+            </div>
+            <div className="owed-row">
+              <span>Deposit to {LIVE.ranch.name}, applies to your share of the steer</span>
+              <b>- {money(est.deposit)}</b>
+            </div>
+            <div className="owed-row total">
+              <span>
+                Due at pickup
+                <span className="of-sub">
+                  {money(est.animalBalance)} to {PAYABLE_TO}, about {money(est.processing)} to {LIVE.butcher.name}
+                </span>
+              </span>
+              <b>{money(est.balance)}</b>
+            </div>
+          </div>
+          <p className="owed-fine">
+            Your share of the steer is a fixed price. Processing is billed on your steer's actual hanging
+            weight, so that line can move a little either way. Ranch questions: {RANCH_CONTACT.name},
+            {" "}{RANCH_CONTACT.phone}. Anything else: {SUPPORT.email}.
           </p>
         </div>
       )}

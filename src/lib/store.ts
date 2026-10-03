@@ -1,16 +1,16 @@
 /* ============================================================
    Local data layer. Persists to localStorage today; shapes and
-   signatures mirror the future backend so it can swap without
-   touching the UI. Keys bumped to v2 for the cut-sheet-wizard
-   order shape.
+   signatures mirror the backend (apps-script/Code.gs) so it can
+   swap without touching the UI.
    ============================================================ */
 
 import {
   MAIN_CUTS, EXTRA_GROUPS, SHARES, CURRENT_SEASON, SEASON_STEERS,
   type ShareId, type CutMode, type SeasonId,
 } from "../data/config";
+import { LIVE } from "../data/partnerships";
 
-/** Keep-or-grind answer. Undefined means "not answered yet" — the
+/** Keep-or-grind answer. Undefined means "not answered yet": the
     barbecue / fast / workhorse groups make people choose. */
 export type KeepGrind = "yes" | "grind";
 
@@ -40,13 +40,13 @@ export interface CutSheetAnswers {
   rib: { choice: "prime" | "ribsteak" | "ribeye"; thickness?: string; perPackage?: string };
   loin: { choice: "tbone" | "strip"; thickness: string; perPackage: string };
   filetThickness?: string;                        // when loin.choice === "strip"
-  extras: Record<string, KeepGrind | undefined>;  // brisket, flank, … undefined = unanswered
+  extras: Record<string, KeepGrind | undefined>;  // brisket, flank, ... undefined = unanswered
   groundPack: string;                             // "1" | "1.5" | "2"
   patties: boolean;
   pattySize: string;
   pattyLbs: string;                               // "40 lb"
   organs: string[];
-  tallow: boolean;                                // fat for rendering — special request
+  tallow: boolean;                                // fat for rendering, a special request
   notes: string;
 }
 
@@ -63,7 +63,7 @@ export function defaultCutSheet(): CutSheetAnswers {
     rib: { choice: "ribeye", thickness: "1", perPackage: "2" },
     loin: { choice: "tbone", thickness: "1", perPackage: "2" },
     filetThickness: "1 1/2",
-    extras: {},                 // deliberately empty — keep or grind is a required choice
+    extras: {},                 // deliberately empty: keep or grind is a required choice
     groundPack: "1",
     patties: false,
     pattySize: "4oz",
@@ -74,7 +74,7 @@ export function defaultCutSheet(): CutSheetAnswers {
   };
 }
 
-/** A fully answered sheet — used for the sample order people can
+/** A fully answered sheet, used for the sample order people can
     browse from the front page before they start their own. */
 export function sampleCutSheet(): CutSheetAnswers {
   return {
@@ -84,7 +84,7 @@ export function sampleCutSheet(): CutSheetAnswers {
     ),
     organs: ["soupbones", "oxtail"],
     tallow: true,
-    notes: "Leaning on the freezer for weeknights — happy to take extra ground.",
+    notes: "Leaning on the freezer for weeknights, so happy to take extra ground.",
   };
 }
 
@@ -93,12 +93,12 @@ export function sampleCutSheet(): CutSheetAnswers {
 export type OrderStatus =
   | "reserved"      // deposit in, share held
   | "locked"        // cut sheet sent to the butcher
-  | "processing"    // harvested, hanging at Colorado Custom
+  | "processing"    // harvested, hanging at the butcher
   | "ready"         // packaged, ready for pickup
   | "picked-up";
 
 export interface Order {
-  code: string;            // e.g. TR-4F7K2M
+  code: string;            // e.g. RC-4F7K2M
   createdAt: string;
   status: OrderStatus;
   share: ShareId;
@@ -107,6 +107,7 @@ export interface Order {
   email: string;
   phone: string;
   address: string;         // CCMC cut sheet wants it
+  partnership?: string;    // Partnership.slug ("denver"); absent = the live one
   season?: SeasonId;       // which harvest it's reserved from; absent = current
   steer?: string;          // Steer.id, once the ranch links it
   sample?: boolean;
@@ -119,10 +120,12 @@ export interface Steer {
   season: SeasonId;
   hangingWeight?: number;  // lb, once it's on the hook
   readyDate?: string;      // yyyy-mm-dd, estimated
-  /** $/lb hanging for this animal. Unset = the standard HANGING_RATE.
-      Set below standard when a heavy carcass would otherwise push a
-      customer's bill up more than feels fair. */
-  rate?: number;
+  /** Optional ranch discount on this animal: dollars off a WHOLE
+      steer's animal price, prorated by share. The animal share is a
+      fixed price on the bill of sale; this only ever lowers it (say,
+      a carcass that came in light). Processing is never discounted
+      here: the butcher bills that on its own. */
+  discount?: number;
 }
 
 /** What the front-page tracker is built from. */
@@ -142,10 +145,11 @@ export function reservedSteers(orders: Order[], settings: SeasonSettings): numbe
   return online + settings.offline;
 }
 
-const ORDERS_KEY = "tr.orders.v2";
-const NOTES_KEY = "tr.notes.v2";
-const STEERS_KEY = "tr.steers.v1";
-const SETTINGS_KEY = "tr.season.v1";
+const ORDERS_KEY = "rc.orders.v1";
+const NOTES_KEY = "rc.notes.v1";
+const STEERS_KEY = "rc.steers.v1";
+const SETTINGS_KEY = "rc.season.v1";
+export const SAMPLE_CODE = "RC-SAMPLE1";
 
 function load<T>(key: string): T[] {
   try {
@@ -171,15 +175,16 @@ export function randomCode(len = 6): string {
 /* One sample order so tracking + back office demo themselves. */
 function seed() {
   const existing = load<Order>(ORDERS_KEY);
-  const sampleRow = existing.find((o) => o.code === "TR-SAMPLE1");
+  const sampleRow = existing.find((o) => o.code === SAMPLE_CODE);
   /* refresh a stale sample from an older cut-sheet shape */
   if (sampleRow && sampleRow.cutSheet?.tallow === undefined) {
-    save(ORDERS_KEY, existing.map((o) => (o.code === "TR-SAMPLE1" ? { ...o, cutSheet: sampleCutSheet() } : o)));
+    save(ORDERS_KEY, existing.map((o) => (o.code === SAMPLE_CODE ? { ...o, cutSheet: sampleCutSheet() } : o)));
     return;
   }
   if (existing.length) return;
   const sample: Order = {
-    code: "TR-SAMPLE1", createdAt: "2026-09-02T17:00:00Z", status: "reserved",
+    code: SAMPLE_CODE, createdAt: "2026-10-01T17:00:00Z", status: "reserved",
+    partnership: LIVE.slug,
     share: "half", cutSheet: sampleCutSheet(),
     name: "Dana Henderson", email: "dana@example.com", phone: "970-555-0134",
     address: "418 Maple St, Greeley CO", sample: true,
@@ -197,10 +202,11 @@ export function getOrder(code: string): Order | undefined {
   return listOrders().find((o) => o.code.toUpperCase() === code.toUpperCase());
 }
 
-export function createOrder(input: Omit<Order, "code" | "createdAt" | "status">): Order {
+export function createOrder(input: Omit<Order, "code" | "createdAt" | "status" | "partnership">): Order {
   const order: Order = {
     ...input,
-    code: "TR-" + randomCode(6),
+    partnership: LIVE.slug,
+    code: "RC-" + randomCode(6),
     createdAt: new Date().toISOString(),
     status: "reserved",
   };
@@ -277,9 +283,9 @@ export function setNote(email: string, text: string) {
 
 export const STATUS_STEPS: { id: OrderStatus; label: string; blurb: string }[] = [
   { id: "reserved", label: "Reserved", blurb: "Deposit in. Your share is held, and your cut sheet can still be changed until your steer goes to the butcher." },
-  { id: "locked", label: "Cut sheet locked", blurb: "Your cutting instructions are with Colorado Custom." },
+  { id: "locked", label: "Cut sheet locked", blurb: `Your cutting instructions are with ${LIVE.butcher.name}.` },
   { id: "processing", label: "Hanging & processing", blurb: "Your beef is dry aging 14 days, then cut and packaged to your instructions." },
-  { id: "ready", label: "Ready for pickup", blurb: "Pick up at Colorado Custom in Kersey — frozen, vacuum-sealed and boxed, ready to load." },
+  { id: "ready", label: "Ready for pickup", blurb: `Pick up at ${LIVE.butcher.name} in ${LIVE.butcher.city}. Frozen, vacuum sealed, labeled Not For Sale and boxed, ready to load.` },
   { id: "picked-up", label: "Picked up", blurb: "Enjoy. Tell us how the first ribeye went." },
 ];
 

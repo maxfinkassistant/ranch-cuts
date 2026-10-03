@@ -1,7 +1,7 @@
 /* A stylized Front Range: the mountains along the left edge, the
    plains running east, the Denver area down by the foothills, the
    butcher in Kersey, and the ranch up in the northeast. Roughly to
-   scale — Kersey is an hour northeast of Denver. */
+   scale: Kersey is an hour northeast of Denver. */
 
 import { ASSET } from "../data/config";
 
