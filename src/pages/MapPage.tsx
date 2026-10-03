@@ -57,7 +57,7 @@ export default function MapPage() {
         },
       ];
     }),
-    ...(you ? [{ id: "you", kind: "you" as const, lat: you.place.lat, lon: you.place.lon, label: you.place.place, labelPos: "below" as const }] : []),
+    ...(you ? [{ id: "you", kind: "you" as const, lat: you.place.lat, lon: you.place.lon, label: you.place.place, labelPos: "left" as const }] : []),
   ];
 
   const focus = useMemo(() => {
@@ -98,7 +98,7 @@ export default function MapPage() {
       <section className="page">
         <div className="wide map-layout">
           <div className="map-stage">
-            <UsMap markers={markers} focus={focus} highlight={highlight} minSpan={150}
+            <UsMap markers={markers} focus={focus} highlight={highlight} minSpan={you || live ? 75 : 150}
               lines={zoomed && live ? [{ from: { lat: live.ranch.lat, lon: live.ranch.lon }, to: live.butcher }, ...(you && (you.cov.kind === "covered" || you.cov.kind === "reachable") ? [{ from: you.place, to: live.butcher, kind: "drive" as const }] : [])] : []}
               label="Map of Ranch Cuts partnerships: open now and planned" />
             <div className="map-key" aria-hidden="true">
@@ -120,7 +120,7 @@ export default function MapPage() {
                   <div>
                     <span className="tag">The ranch</span>
                     <b>{live.ranch.name}</b>
-                    <p className="small">{live.ranch.region}. {live.ranch.claims.slice(0, 3).join(", ")}.</p>
+                    <p className="small">{live.ranch.region}. {live.ranch.summary}.</p>
                   </div>
                   <div>
                     <span className="tag">The butcher</span>
@@ -141,7 +141,7 @@ export default function MapPage() {
                 <span className="tag">Planned, not open yet</span>
                 <h2 className="d">Ranch Cuts {planned.city}</h2>
                 <p className="small">
-                  {planned.butchersNearby} beef plants within about an hour of {planned.city} could cut for a partnership here. No
+                  {planned.butchersNearby} butchers that process beef are within about an hour of {planned.city}. No
                   ranch or butcher is signed yet. {planned.states.length > 1 ? `Because the metro crosses a state line, it will get a ranch and butcher on each side (${planned.states.join(" and ")}).` : ""}
                 </p>
                 <WaitlistForm zip={you?.place.zip ?? ""} place={you?.place.place} state={you?.place.state ?? planned.states[0]} nearest={planned.slug}

@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "build": "tsc -b && vite build && cp dist/index.html dist/404.html",
+    "preview": "vite preview",
+    "data": "python3 scripts/build-zips.py && bun scripts/build-states.ts"
   },
   "dependencies": {
     "d3-geo": "^3.1.1",

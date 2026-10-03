@@ -20,6 +20,7 @@ export interface Ranch {
   lon: number;
   contact: { name: string; phone: string; email: string };
   logo?: string;         // public/ asset
+  summary: string;       // one line, approved claims only
   story: string;
   claims: string[];      // approved claims only
 }
@@ -83,6 +84,7 @@ export const PARTNERSHIPS: Partnership[] = [
       lon: -103.7,
       contact: { name: "Josh", phone: "402-245-8195", email: "thunderboltbeef@gmail.com" },
       logo: "thunderbolt-mark.png",
+      summary: "Angus cattle, pasture raised and grain finished in Colorado",
       story:
         "Thunderbolt raises Angus cattle on pasture in northeast Colorado and grain-finishes them on its own Colorado pens for rich marbling. The ranch keeps ownership of every animal from conception to harvest. No sale barns, no middlemen.",
       claims: ["Angus genetics", "Pasture raised in Colorado", "Grain finished", "Owned from conception to harvest", "Typically grades Choice or Prime"],

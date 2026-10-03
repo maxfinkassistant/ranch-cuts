@@ -8,6 +8,8 @@ import { SUPPORT, ASSET } from "../data/config";
 const SALE_BARN = 3270;
 const AT_THE_STORE = 7233;
 
+const lowerFirst = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
+
 export default function About() {
   return (
     <main>
@@ -91,7 +93,7 @@ export default function About() {
             <span className="tag eyebrow">Where it started</span>
             <h2 className="d">Ranch Cuts {LIVE.city}</h2>
             <p style={{ marginTop: "var(--space-md)" }}>
-              Our first partnership is {LIVE.ranch.name}, which raises Angus cattle on pasture in {LIVE.ranch.region.toLowerCase()} and
+              Our first partnership is {LIVE.ranch.name}, which raises Angus cattle on pasture in {lowerFirst(LIVE.ranch.region)} and
               grain-finishes them on its own Colorado pens, and {LIVE.butcher.name}, a butcher in {LIVE.butcher.city}. The ranch keeps
               ownership of every animal from conception to harvest. The butcher hangs every steer for 14 days and cuts it to each
               owner's sheet.
@@ -141,7 +143,7 @@ export default function About() {
             <RcMark width={96} body="var(--on-dark)" cuts="var(--pasture)" />
             <h2 className="d">Ranchers and butchers: let's work together.</h2>
             <p>
-              We're signing partnerships in {PLANNED.slice(0, 6).map((m) => m.city).join(", ")} and {PLANNED.length - 6} more metros
+              We're looking for ranch and butcher partners in {PLANNED.slice(0, 6).map((m) => m.city).join(", ")} and {PLANNED.length - 6} more metros
               across Nebraska, Kansas, Missouri, Iowa, Oklahoma, Texas, Minnesota and Wisconsin. If you're near one of them, or near a
               place that should be next, we'd like to hear from you.
             </p>

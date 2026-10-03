@@ -143,13 +143,13 @@ export default function HowItWorks() {
           </div>
           <div className="pay-explainer">
             <div className="pay-line">
-              <span className="tag">To {LIVE.ranch.name}</span>
+              <span className="tag">To {LIVE.ranch.short} Ranch</span>
               <div className="d pay-num">{money(half.animal)}</div>
               <p><b>Your half of the steer.</b> A fixed price, set by the ranch. Your {money(DEPOSIT)} deposit counts toward it.</p>
             </div>
             <div className="pay-plus" aria-hidden="true">+</div>
             <div className="pay-line">
-              <span className="tag">To {LIVE.butcher.name}</span>
+              <span className="tag">To {LIVE.butcher.short}</span>
               <div className="d pay-num">about {money(half.processing)}</div>
               <p><b>Processing.</b> Harvest, hang, cut, wrap and freeze, at the butcher's posted rates on your steer's actual hanging weight.</p>
             </div>

@@ -140,7 +140,7 @@ function Result({ place, cov }: { place: ZipPlace; cov: Coverage }) {
           <span className="tag eyebrow">{where} · Planned</span>
           <h2 className="d">Ranch Cuts {m.city} is on the list. It isn't open yet.</h2>
           <p>
-            There are {m.butchersNearby} beef plants within an hour of {m.city} that could cut for us. Now we need a ranch and a
+            There are {m.butchersNearby} butchers that process beef within about an hour of {m.city}. Now we need a ranch and a
             butcher who want to work together. Join the list and we'll tell you the day shares open. The more families who ask,
             the sooner {m.city} opens.
           </p>
@@ -154,11 +154,11 @@ function Result({ place, cov }: { place: ZipPlace; cov: Coverage }) {
           <Suspense fallback={<div className="map-ph" />}>
             <UsMap aspect={1.2} focus={[you, m]} minSpan={260} highlight={m.states}
               markers={[
-                { id: m.slug, kind: "planned", lat: m.lat, lon: m.lon, label: m.city, sub: "planned" },
-                { id: "you", kind: "you", lat: place.lat, lon: place.lon, label: place.place },
+                { id: m.slug, kind: "planned", lat: m.lat, lon: m.lon, label: `${m.city} (planned)`, labelPos: "above" },
+                { id: "you", kind: "you", lat: place.lat, lon: place.lon, label: cov.miles < 20 ? "You" : place.place, labelPos: "below" },
               ]} />
           </Suspense>
-          <p className="diagram-hint">About {Math.round(cov.miles)} miles from {place.place} to {m.city}.</p>
+          {cov.miles >= 20 && <p className="diagram-hint">About {Math.round(cov.miles)} miles from {place.place} to {m.city}.</p>}
         </div>
       </div>
     );
@@ -178,7 +178,7 @@ function Result({ place, cov }: { place: ZipPlace; cov: Coverage }) {
         <p className="small mute find-note">
           Shares are sold in-state only: the ranch, the butcher and your pickup are always in the same state, and custom-cut beef
           can't be shipped. So the closest open partnership, Ranch Cuts {cov.nearestLive.partnership.city}, can't serve {place.state}.
-          {np ? ` The nearest planned metro is ${np.metro.city}, about ${Math.round(np.miles)} miles away.` : ""}
+          {np && np.miles < 300 ? ` The nearest planned metro is ${np.metro.city}, about ${Math.round(np.miles)} miles away.` : ""}
         </p>
         <p className="small"><Link to="/about#partner">Know a rancher or butcher near you? Point them our way.</Link></p>
       </div>
@@ -186,7 +186,7 @@ function Result({ place, cov }: { place: ZipPlace; cov: Coverage }) {
         <Suspense fallback={<div className="map-ph" />}>
           <UsMap aspect={1.2} focus={np && np.miles < 500 ? [you, np.metro] : [you]} minSpan={320} highlight={[place.state]}
             markers={[
-              ...(np ? [{ id: np.metro.slug, kind: "planned" as const, lat: np.metro.lat, lon: np.metro.lon, label: np.metro.city }] : []),
+              ...(np && np.miles < 500 ? [{ id: np.metro.slug, kind: "planned" as const, lat: np.metro.lat, lon: np.metro.lon, label: np.metro.city }] : []),
               { id: "you", kind: "you", lat: place.lat, lon: place.lon, label: place.place },
             ]} />
         </Suspense>

@@ -80,7 +80,11 @@ export default function UsMap({
   className?: string;
 }) {
   const target = useMemo<Box>(() => {
-    if (!focus || !focus.length) return fit([[40, 20], [935, 590]], 975, aspect);
+    if (!focus || !focus.length) {
+      /* the whole country, letterboxed to the requested shape */
+      const [w, h] = 975 / 610 > aspect ? [975, 975 / aspect] : [610 * aspect, 610];
+      return [(975 - w) / 2, (610 - h) / 2, w, h] as Box;
+    }
     const pts = focus.map((p) => project(p.lat, p.lon)).filter(Boolean) as [number, number][];
     return fit(pts, minSpan, aspect);
   }, [JSON.stringify(focus), minSpan, aspect]);
@@ -115,7 +119,7 @@ export default function UsMap({
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
-  const u = box[2] / px;
+  const u = (box[2] / px) * (px < 520 ? 0.72 : 1);
   const hl = new Set(highlight);
 
   return (

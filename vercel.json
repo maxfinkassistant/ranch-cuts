@@ -1,0 +1,1 @@
+{ "rewrites": [{ "source": "/((?!zip/|assets/).*)", "destination": "/index.html" }] }

@@ -83,8 +83,8 @@ export default function ColoradoMap() {
         <rect className="co-door" x="-5" y="8" width="10" height="14" />
         <path className="co-awning" d="M -20 -2 L 20 -2 L 22 5 L -22 5 Z" />
       </g>
-      <text className="co-label" x={BUTCHER.x} y={BUTCHER.y - 42} textAnchor="middle">COLORADO CUSTOM MEAT CO</text>
-      <text className="co-label co-sub" x={BUTCHER.x} y={BUTCHER.y - 28} textAnchor="middle">KERSEY · PICKUP HERE</text>
+      <text className="co-label" x={BUTCHER.x} y={BUTCHER.y - 52} textAnchor="middle">COLORADO CUSTOM MEAT CO</text>
+      <text className="co-label co-sub" x={BUTCHER.x} y={BUTCHER.y - 37} textAnchor="middle">KERSEY · PICKUP HERE</text>
 
       {/* the Denver area, deliberately unlabeled */}
       <circle className="co-city-ring" cx={DENVER.x} cy={DENVER.y} r="18" />

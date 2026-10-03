@@ -23,7 +23,7 @@ export default function Layout() {
             : <> {season.label.toUpperCase()} HARVEST, {a.known && a.reserved > 0 ? `${a.reserved} OF ${a.capacity}` : a.capacity} STEERS{a.known && a.reserved > 0 ? " RESERVED" : ""}</>}
         </Link>
         <span className="banner-sep" aria-hidden="true" />
-        <Link to="/map">{PLANNED.length} MORE METROS PLANNED</Link>
+        <Link to="/map" className="banner-planned">{PLANNED.length} MORE METROS PLANNED</Link>
       </div>
       <header className="site-header">
         <Link to="/" className="brand" aria-label="Ranch Cuts home">

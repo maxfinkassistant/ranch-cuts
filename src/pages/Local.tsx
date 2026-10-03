@@ -11,6 +11,8 @@ import {
 
 const UsMap = lazy(() => import("../components/UsMap"));
 
+const lowerFirst = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
+
 export default function Local() {
   const { slug } = useParams();
   const p = partnershipBySlug(slug);
@@ -48,7 +50,7 @@ export default function Local() {
             </p>
             <p className="lede">
               Serving {p.serves.slice(0, -1).join(", ")} and {p.serves[p.serves.length - 1]}. Your share is one steer from a ranch
-              in {p.ranch.region.toLowerCase()}, cut by a butcher in {p.butcher.city}, picked up an hour from Denver.
+              in {lowerFirst(p.ranch.region)}, cut by a butcher in {p.butcher.city}, picked up about an hour from {p.city}.
             </p>
             <div className="hero-actions">
               <Link to="/order" className="btn btn-solid btn-big">Reserve a share</Link>
@@ -132,7 +134,7 @@ export default function Local() {
               when your beef is ready. It comes out frozen, vacuum sealed and boxed.
             </p>
           </div>
-          <div className="co-map-grid">
+          <div className="co-map-grid local-maps">
             <ColoradoMap />
             <div className="local-zoom">
               <Suspense fallback={<div className="map-ph" />}>
@@ -236,7 +238,7 @@ function PlannedPage({ slug }: { slug: string }) {
             <span className="tag eyebrow">Planned · not open yet</span>
             <h1 className="d local-title">Ranch Cuts<br />{m.city}</h1>
             <p className="lede">
-              {m.city} is on our list: {m.butchersNearby} beef plants within about an hour could cut for a partnership here.
+              {m.city} is on our list: {m.butchersNearby} butchers that process beef are within about an hour.
               We haven't signed a ranch or a butcher yet. Sign-ups from {m.city} decide how soon we do.
             </p>
             <WaitlistForm zip="" state={m.states[0]} nearest={m.slug} cta={`Bring it to ${m.city}`} />
