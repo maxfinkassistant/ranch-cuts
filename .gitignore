@@ -4,3 +4,4 @@ dist/
 *.local
 data-src/
 tsconfig.tsbuildinfo
+demo-build/

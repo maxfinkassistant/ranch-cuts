@@ -73,8 +73,8 @@ export default function Layout() {
         <div className="footer-fine">
           <p>
             Ranch Cuts is a marketplace. Each share is a share of one live, ear-tagged steer, sold by the partner ranch,
-            which is the seller of record. The partner butcher bills its processing to each owner. Ranch Cuts never owns the cattle
-            or the beef. Beef processed for owners is labeled Not For Sale.
+            which is the seller of record, and processed by the partner butcher. Families pay Ranch Cuts, which pays the ranch and
+            the butcher. Ranch Cuts never owns the cattle or the beef. Beef processed for owners is labeled Not For Sale.
           </p>
           <p>Zip code data: GeoNames (CC BY 4.0). State outlines: U.S. Census Bureau. <Link to="/customers">Ranch office</Link></p>
         </div>

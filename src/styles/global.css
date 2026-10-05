@@ -22,6 +22,7 @@
   --brick: #A8432A;        /* the rib and the one accent; 4.9:1 on cream */
   --brick-2: #8F3822;      /* brick hover */
   --brick-light: #F2B8A6;  /* error text on navy */
+  --brick-on-navy: #E07A5F; /* brick for LARGE display type on navy only (deck statement bands) */
   --slate: #3E5468;        /* supporting blue: done and checked states */
   --sky: #DCE6EE;          /* supporting blue: selected and info tints */
   --sky-line: #BCCAD8;
@@ -789,7 +790,6 @@ h3.d { font-size: 1.3rem; line-height: 1.15; }
 }
 .dialog-close:hover { color: var(--ink); }
 .dialog-close:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
-.dark-section :focus-visible, .closing :focus-visible, .site-footer :focus-visible, .site-banner :focus-visible, .listing-card:focus-visible { outline-color: var(--on-navy); }
 
 .count-table {
   margin-top: var(--space-md);
@@ -1411,7 +1411,6 @@ h3.d { font-size: 1.3rem; line-height: 1.15; }
 .primal-row:hover { border-color: var(--rule-strong); }
 .primal-row.on { border-color: var(--navy); background: var(--sky); }
 .primal-row:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
-.dark-section :focus-visible, .closing :focus-visible, .site-footer :focus-visible, .site-banner :focus-visible, .listing-card:focus-visible { outline-color: var(--on-navy); }
 .primal-row img { width: 64px; height: 64px; object-fit: cover; border-radius: var(--radius); display: block; }
 .primal-row .name { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; line-height: 1.2; }
 .primal-row .where { font-size: 0.875rem; color: var(--ink-2); margin-top: 2px; line-height: 1.5; }
@@ -1560,7 +1559,6 @@ h3.d { font-size: 1.3rem; line-height: 1.15; }
 .dark-section h2 { color: var(--on-navy); }
 main { min-height: 50vh; }
 :focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
-.dark-section :focus-visible, .closing :focus-visible, .site-footer :focus-visible, .site-banner :focus-visible, .listing-card:focus-visible { outline-color: var(--on-navy); }
 
 /* zip search */
 .zip-search { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin-top: var(--space-xl); max-width: 520px; }
@@ -1582,10 +1580,7 @@ main { min-height: 50vh; }
 /* hero */
 .rc-hero { padding-top: clamp(40px, 7vh, 88px); padding-bottom: clamp(48px, 8vh, 96px); }
 .rc-hero-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(28px, 5vw, 72px); align-items: center; }
-.rc-hero /* every other place the display face shows up */
-.ground-tally-num, .primal-row .name, .step-tag, .pay-plus, .rule-n { font-variation-settings: "opsz" 144, "SOFT" 0, "WONK" 0; letter-spacing: -0.02em; }
-
-h1.d { font-size: clamp(2.7rem, 6.2vw, 5rem); line-height: 1.02; }
+.rc-hero h1.d { font-size: clamp(2.7rem, 6.2vw, 5rem); line-height: 1.02; }
 .rc-hero .lede { margin-top: var(--space-lg); max-width: 36rem; }
 .rc-hero .hero-fine { font-family: var(--font-body); font-weight: 600; letter-spacing: 0.02em; }
 @media (max-width: 900px) { .rc-hero-grid { grid-template-columns: 1fr; } }
@@ -1647,10 +1642,7 @@ h1.d { font-size: clamp(2.7rem, 6.2vw, 5rem); line-height: 1.02; }
 
 /* find */
 .find-head { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: var(--space-2xl); align-items: end; }
-.find-head /* every other place the display face shows up */
-.ground-tally-num, .primal-row .name, .step-tag, .pay-plus, .rule-n { font-variation-settings: "opsz" 144, "SOFT" 0, "WONK" 0; letter-spacing: -0.02em; }
-
-h1.d { font-size: clamp(2.6rem, 6vw, 4.4rem); }
+.find-head h1.d { font-size: clamp(2.6rem, 6vw, 4.4rem); }
 .find-head .lede { margin-top: var(--space-md); }
 @media (max-width: 900px) { .find-head { grid-template-columns: 1fr; gap: 0; } }
 .find-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); align-items: start; }
@@ -1710,10 +1702,7 @@ h1.d { font-size: clamp(2.6rem, 6vw, 4.4rem); }
 /* map page */
 .map-top { padding-bottom: var(--space-xl); }
 .map-head { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: var(--space-2xl); align-items: end; }
-.map-head /* every other place the display face shows up */
-.ground-tally-num, .primal-row .name, .step-tag, .pay-plus, .rule-n { font-variation-settings: "opsz" 144, "SOFT" 0, "WONK" 0; letter-spacing: -0.02em; }
-
-h1.d { font-size: clamp(2.4rem, 5.4vw, 4rem); }
+.map-head h1.d { font-size: clamp(2.4rem, 5.4vw, 4rem); }
 .map-head .lede { margin-top: var(--space-md); }
 @media (max-width: 900px) { .map-head { grid-template-columns: 1fr; gap: var(--space-lg); } }
 .map-layout { display: grid; grid-template-columns: minmax(0, 8fr) minmax(300px, 4fr); gap: var(--space-lg); align-items: start; }
@@ -1803,10 +1792,7 @@ h1.d { font-size: clamp(2.4rem, 5.4vw, 4rem); }
 
 /* about */
 .about-hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 72px); align-items: end; }
-.about-hero-grid /* every other place the display face shows up */
-.ground-tally-num, .primal-row .name, .step-tag, .pay-plus, .rule-n { font-variation-settings: "opsz" 144, "SOFT" 0, "WONK" 0; letter-spacing: -0.02em; }
-
-h1.d { font-size: clamp(2.8rem, 6.4vw, 5rem); }
+.about-hero-grid h1.d { font-size: clamp(2.8rem, 6.4vw, 5rem); }
 @media (max-width: 900px) { .about-hero-grid { grid-template-columns: 1fr; } }
 .gap-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 72px); align-items: center; }
 @media (max-width: 900px) { .gap-grid { grid-template-columns: 1fr; } }
@@ -1857,3 +1843,57 @@ h1.d { font-size: clamp(2.8rem, 6.4vw, 5rem); }
 .local-maps { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important; align-items: center; }
 @media (max-width: 860px) { .local-maps { grid-template-columns: 1fr !important; } }
 @media (max-width: 600px) { .banner-sep, .banner-planned { display: none; } }
+
+/* ============================================================
+   Deck template (brand v3 pitch deck): cover hero, brick step
+   squares with arrows, navy statement band
+   ============================================================ */
+
+.rc-cover { position: relative; background: var(--navy); color: var(--on-navy); overflow: hidden; }
+.rc-cover-photo { position: absolute; top: 0; right: 0; bottom: 0; width: 44%; background-size: cover; background-position: 4% 45%; }
+.rc-cover-photo::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 140px; background: linear-gradient(90deg, var(--navy) 0%, rgba(22, 38, 61, 0) 100%); }
+.rc-cover-inner { position: relative; padding-top: clamp(56px, 10vh, 120px); padding-bottom: clamp(56px, 10vh, 120px); }
+.rc-cover-text { max-width: 620px; }
+.rc-cover h1.d { color: var(--on-navy); font-size: clamp(2.8rem, 6vw, 5rem); line-height: 1.02; margin-top: var(--space-md); }
+.rc-cover .hl { color: var(--brick-on-navy); }
+.rc-cover .lede { color: var(--muted-on-navy); margin-top: var(--space-lg); max-width: 34rem; }
+.rc-cover .hero-fine { color: var(--muted-on-navy); font-family: var(--font-body); font-weight: 600; letter-spacing: 0.02em; }
+.cover-kicker { color: var(--muted-on-navy); }
+.rc-cover .zip-search .btn-on-dark:hover:not(:disabled) { background: #fff; }
+@media (max-width: 900px) {
+  .rc-cover-photo { position: relative; width: 100%; height: 240px; background-position: center 35%; }
+  .rc-cover-photo::before { inset: auto 0 0 0; width: auto; height: 120px; background: linear-gradient(0deg, var(--navy) 0%, rgba(22, 38, 61, 0) 100%); }
+  .rc-cover-inner { padding-top: var(--space-lg); }
+}
+
+.deck-title { font-size: clamp(2.2rem, 4.6vw, 3.6rem); line-height: 1.04; }
+.deck-steps { list-style: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-xl); margin-top: var(--space-2xl); }
+.deck-steps li { position: relative; }
+.deck-num { display: inline-grid; place-items: center; width: 44px; height: 44px; background: var(--brick); color: var(--on-navy); border-radius: var(--radius); font-weight: 700; font-size: 1.15rem; }
+.deck-arrow { position: absolute; top: 8px; right: -6px; width: 34px; height: 18px; background: var(--rule-strong); clip-path: polygon(0 35%, 60% 35%, 60% 0, 100% 50%, 60% 100%, 60% 65%, 0 65%); }
+.deck-steps h3.d { font-size: clamp(1.5rem, 2.2vw, 1.9rem); margin: var(--space-md) 0 6px; }
+.deck-steps p { color: var(--muted); font-size: 1rem; }
+@media (max-width: 900px) { .deck-steps { grid-template-columns: 1fr 1fr; } .deck-arrow { display: none; } }
+@media (max-width: 520px) { .deck-steps { grid-template-columns: 1fr; gap: var(--space-lg); } }
+
+.statement-band { margin-top: var(--space-2xl); background: var(--navy); color: var(--on-navy); border-radius: var(--radius); padding: clamp(24px, 3.5vw, 44px) clamp(24px, 3.5vw, 48px); display: grid; grid-template-columns: minmax(0, 1fr) minmax(200px, 300px); gap: var(--space-xl); align-items: center; }
+.statement { color: var(--brick-on-navy); font-size: clamp(1.7rem, 3.2vw, 2.6rem); line-height: 1.08; }
+.statement-side { color: var(--on-navy); font-size: 1rem; }
+.statement-side a { color: var(--on-navy); font-weight: 700; }
+@media (max-width: 760px) { .statement-band { grid-template-columns: 1fr; } }
+
+.listing-wide { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); }
+.listing-wide .listing-photo { aspect-ratio: auto; min-height: 260px; }
+.listing-wide .listing-body { padding: clamp(24px, 3.5vw, 44px); }
+@media (max-width: 760px) { .listing-wide { grid-template-columns: 1fr; } .listing-wide .listing-photo { min-height: 200px; } }
+.local-cover .local-title { margin-top: var(--space-md); }
+.local-cover .local-title .city { color: var(--brick-on-navy); }
+.local-cover .local-lockup { color: var(--muted-on-navy); }
+.local-cover .local-lockup b { color: var(--on-navy); }
+.local-tracker { padding-top: var(--space-xl); padding-bottom: var(--space-xl); }
+.local-tracker .wide { max-width: 760px; }
+/* navy section opener, as on the deck's section-opener slides */
+.navy-opener { background: var(--navy); color: var(--on-navy); padding-top: clamp(56px, 9vh, 104px); padding-bottom: clamp(56px, 9vh, 104px); }
+.navy-opener h1.d { color: var(--on-navy); margin-top: var(--space-md); font-size: clamp(2.6rem, 5.6vw, 4.6rem); line-height: 1.02; }
+.navy-opener .hl { color: var(--brick-on-navy); }
+.navy-opener .lede { color: var(--muted-on-navy); }

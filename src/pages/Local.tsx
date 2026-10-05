@@ -39,29 +39,32 @@ export default function Local() {
 
   return (
     <main>
-      {/* lockup */}
-      <section className="page local-hero">
-        <div className="wide local-hero-grid">
-          <div>
-            <span className="tag eyebrow">Open now · {p.stateName}</span>
-            <h1 className="local-title"><img src={ASSET("brand/ranchcuts-horizontal-navy.svg")} alt="Ranch Cuts" width={438} height={106} /><span className="city">{p.city}</span></h1>
-            <p className="local-lockup">
-              Beef from <b>{p.ranch.name}</b>,<br />cut at <b>{p.butcher.name}</b>.
-            </p>
-            <p className="lede">
-              Serving {p.serves.slice(0, -1).join(", ")} and {p.serves[p.serves.length - 1]}. Your share is one steer from a ranch
-              in {lowerFirst(p.ranch.region)}, cut by a butcher in {p.butcher.city}, picked up about an hour from {p.city}.
-            </p>
-            <div className="hero-actions">
-              <Link to="/order" className="btn btn-accent btn-big">Reserve a share</Link>
-              <a href="#meet" className="btn btn-ghost btn-big">Meet them</a>
+      {/* lockup on the deck cover: navy, the steer bleeding off the right */}
+      <section className="rc-cover local-cover">
+        <div className="rc-cover-photo" style={{ backgroundImage: `url(${ASSET("angus-steer.jpg")})` }} aria-hidden="true" />
+        <div className="page rc-cover-inner">
+          <div className="wide">
+            <div className="rc-cover-text">
+              <span className="tag cover-kicker">Open now · {p.stateName}</span>
+              <h1 className="local-title"><img src={ASSET("brand/ranchcuts-horizontal-cream.svg")} alt="Ranch Cuts" width={438} height={106} /><span className="city">{p.city}</span></h1>
+              <p className="local-lockup">
+                Beef from <b>{p.ranch.name}</b>,<br />cut at <b>{p.butcher.name}</b>.
+              </p>
+              <p className="lede">
+                Serving {p.serves.slice(0, -1).join(", ")} and {p.serves[p.serves.length - 1]}. Your share is one steer from a ranch
+                in {lowerFirst(p.ranch.region)}, cut by a butcher in {p.butcher.city}, picked up about an hour from {p.city}.
+              </p>
+              <div className="hero-actions">
+                <Link to="/order" className="btn btn-on-dark btn-big">Reserve a share</Link>
+                <a href="#meet" className="btn btn-ghost on-navy btn-big">Meet them</a>
+              </div>
             </div>
           </div>
-          <div className="local-side">
-            <SteerTracker />
-            <div className="local-photo" style={{ backgroundImage: `url(${ASSET("angus-steer.jpg")})` }} role="img" aria-label="An Angus steer in profile" />
-          </div>
         </div>
+      </section>
+
+      <section className="page local-tracker">
+        <div className="wide"><SteerTracker /></div>
       </section>
 
       {/* meet the ranch / meet the butcher */}
@@ -71,7 +74,7 @@ export default function Local() {
             <h2 className="d">Two local businesses, named on every share</h2>
             <p>
               {p.ranch.name} sells you the share of the steer and is the seller on your bill of sale. {p.butcher.name} harvests
-              it, hangs it, cuts it to your sheet and bills you for that work. Ranch Cuts books it all and stays out of the way.
+              it, hangs it and cuts it to your sheet. You pay Ranch Cuts once, and we pay them both.
             </p>
           </div>
           <div className="meet-grid">
@@ -107,7 +110,7 @@ export default function Local() {
               </div>
               <p>{p.butcher.about}</p>
               <table className="rate-table">
-                <caption className="tag">Processing, billed by the butcher to you</caption>
+                <caption className="tag">Processing, at the butcher's posted rates</caption>
                 <tbody>
                   <tr><td>Harvest fee, per steer</td><td className="n">{money(r.kill)}</td></tr>
                   <tr><td>Cut, wrap and freeze</td><td className="n">{money2(r.perLbHanging)}/lb hanging</td></tr>
@@ -159,8 +162,8 @@ export default function Local() {
           <div className="section-head">
             <h2 className="d">Prices in {p.city}</h2>
             <p>
-              Two charges, both shown up front: a fixed price for your share of the steer, paid to {p.ranch.name}, and processing,
-              billed by {p.butcher.name} at the rates above. A {money(DEPOSIT)} deposit holds your share.
+              One payment to Ranch Cuts, with both parts shown up front: a fixed price for your share of the steer, which goes to
+              {" "}{p.ranch.name}, and processing at the rates above, which goes to {p.butcher.name}. A {money(DEPOSIT)} deposit holds your share.
             </p>
           </div>
           <div className="share-grid">
@@ -171,8 +174,8 @@ export default function Local() {
                 <div className="d price-big">{money(s.total)}<sup>*</sup></div>
                 <p className="small mute">{money2(s.rate)}/lb hanging weight, about {money2(s.takehomeRate)}/lb in your freezer</p>
                 <div className="price-lines">
-                  <div><span>Share of the steer, to {p.ranch.short}</span><b>{money(s.animal)}</b></div>
-                  <div><span>Processing, to {p.butcher.short}<sup>*</sup></span><b>{money(s.processing)}</b></div>
+                  <div><span>Share of the steer, goes to {p.ranch.short}</span><b>{money(s.animal)}</b></div>
+                  <div><span>Processing, goes to {p.butcher.short}<sup>*</sup></span><b>{money(s.processing)}</b></div>
                 </div>
                 <div className="share-specs">
                   <span>About {s.takehome} lb take-home<sup>*</sup></span>
@@ -184,7 +187,7 @@ export default function Local() {
           </div>
           <p className="small mute" style={{ marginTop: "var(--space-md)", maxWidth: "75ch" }}>
             <sup>*</sup>Estimates for a typical 1,500 lb steer with a 900 lb hanging weight. The share price is fixed. Processing is
-            billed on your steer's actual hanging weight, so that line can land a little above or below.
+            figured on your steer's actual hanging weight, so that line can land a little above or below.
           </p>
         </div>
       </section>
@@ -205,7 +208,7 @@ export default function Local() {
           <div>
             <span className="tag">Questions</span>
             <p>The cattle: {p.ranch.contact.name}, {p.ranch.contact.phone}.<br />Cuts and pickup: {p.butcher.short}, {p.butcher.phone}.</p>
-            <p className="dim">Orders and the website: hello@ranchcuts.com.</p>
+            <p className="dim">Orders and payments: hello@ranchcuts.com.</p>
           </div>
         </div>
         <div className="wide" style={{ marginTop: "var(--space-xl)", display: "flex", gap: "var(--space-sm)", flexWrap: "wrap" }}>

@@ -2,8 +2,9 @@
    Ranch Cuts: local partnerships and planned metros
    A partnership = one partner ranch + one partner butcher in a
    place. The ranch is the seller of record on every share; the
-   butcher bills its processing to each owner. Ranch Cuts books
-   it and never takes title (see docs in ~/Documents/RanchCuts).
+   butcher processes it. Ranch Cuts takes every payment and pays
+   the ranch and the butcher (decision 2026-10-05). It never takes
+   title to cattle or beef (see docs in ~/Documents/RanchCuts).
 
    Never call a partnership a "site" anywhere a customer reads it.
    ============================================================ */
@@ -156,8 +157,22 @@ export interface ZipPlace { zip: string; lat: number; lon: number; place: string
 
 /* Zip centroids live in public/zip/<first three digits>.json so a search
    downloads a few KB, not the whole country. GeoNames, CC BY 4.0. */
+let demoZips: Map<string, ZipPlace> | null = null;
+
 export async function lookupZip(zip: string): Promise<ZipPlace | null> {
   if (!/^\d{5}$/.test(zip)) return null;
+  /* the single-file demo carries every zip inline (no server to fetch from) */
+  if (import.meta.env.VITE_DEMO) {
+    if (!demoZips) {
+      const packed = (await import("virtual:demo-zips")).default;
+      demoZips = new Map();
+      for (const line of packed.split("\n")) {
+        const [z, lat, lon, place, state] = line.split(",");
+        demoZips.set(z, { zip: z, lat: +lat, lon: +lon, place, state });
+      }
+    }
+    return demoZips.get(zip) ?? null;
+  }
   try {
     const res = await fetch(`${import.meta.env.BASE_URL}zip/${zip.slice(0, 3)}.json`);
     if (!res.ok) return null;

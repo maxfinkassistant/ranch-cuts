@@ -38,7 +38,7 @@ const STEPS = [
   {
     when: SEASON.pickup,
     t: "Pick up at the butcher",
-    b: "We tell you the day it's ready. Your boxes are labeled Not For Sale with your name on them: this is your beef, processed for you. Pay the balance to the ranch and the processing to the butcher, then load up.",
+    b: "We tell you the day it's ready. Your boxes are labeled Not For Sale with your name on them: this is your beef, processed for you. Pay the balance to Ranch Cuts in one payment, then load up. We pay the ranch and the butcher.",
   },
 ];
 
@@ -46,10 +46,10 @@ const RULES = [
   ["One steer, identified", "Every share is a share of one ear-tagged animal. Not a blend, not a box of assorted beef."],
   ["Sold before harvest", "All shares are sold before the steer is harvested. Unsold steers wait for the next window."],
   ["Priced on the animal", "Your share of the steer has a fixed price. Hanging weight is only used to estimate, and for the butcher's processing bill."],
-  ["Two sellers, two lines", "The ranch sells you the share. The butcher bills you for processing. You see both, every time."],
+  ["One payment, two lines", "The ranch sells you the share and the butcher processes it. You pay Ranch Cuts once and see exactly what goes to each of them."],
   ["Same state, start to finish", "The ranch, the butcher and your pickup are always in the same state."],
   ["Four owners at most", "A steer is sold as one whole, two halves or four quarters. Never smaller."],
-  ["Ranch Cuts never owns your beef", "We run the website, the cut sheet and the booking. We never own the cattle or the beef and never hold it."],
+  ["Ranch Cuts never owns your beef", "We run the website, the cut sheet, the booking and the payments. We never own the cattle or the beef, and never handle the meat."],
   ["Brand inspected where required", "In states with brand inspection, the certificate is recorded for the steer before the first share is sold."],
 ];
 
@@ -68,10 +68,10 @@ export default function HowItWorks() {
   return (
     <main>
       {/* intro */}
-      <section className="page section" style={{ paddingBottom: "var(--space-xl)" }}>
+      <section className="page section navy-opener">
         <div className="wide">
-          <span className="tag eyebrow">How it works</span>
-          <h1 className="d" style={{ maxWidth: "16ch" }}>One steer. Two local businesses. Your cut sheet.</h1>
+          <span className="tag cover-kicker">How it works</span>
+          <h1 className="d" style={{ maxWidth: "16ch" }}>One steer. Two local businesses. <em className="hl">Your cut sheet.</em></h1>
           <p className="lede" style={{ marginTop: "var(--space-lg)", maxWidth: "40rem" }}>
             Buying a share of a steer used to mean knowing a rancher, finding a butcher with an open slot, and filling out a cutting
             form full of words nobody explains. Ranch Cuts puts all of that in one place. Here's the whole thing, start to finish.
@@ -95,12 +95,12 @@ export default function HowItWorks() {
             <div className="role role-butcher">
               <span className="tag">The partner butcher</span>
               <h3 className="d">Harvests, hangs and cuts it your way</h3>
-              <p>Commits harvest slots, cuts to each owner's sheet, packages and freezes, and bills each owner for processing. Pickup is at the butcher's shop.</p>
+              <p>Commits harvest slots, cuts to each owner's sheet, packages and freezes, and is paid its posted processing rates by Ranch Cuts. Pickup is at the butcher's shop.</p>
             </div>
             <div className="role role-rc">
               <span className="tag">Ranch Cuts</span>
               <h3 className="d">Brings it together</h3>
-              <p>The website, the zip code match, the cut sheet, payments to the ranch and butcher, the harvest calendar and the reminders. We never own the cattle or the beef.</p>
+              <p>The website, the zip code match, the cut sheet, the harvest calendar and the reminders. We take your payment and pay the ranch and the butcher. We never own the cattle or the beef.</p>
             </div>
           </div>
         </div>
@@ -138,31 +138,31 @@ export default function HowItWorks() {
       <section className="page section section-tint">
         <div className="wide">
           <div className="section-head">
-            <h2 className="d">Who you pay, with a half as the example</h2>
-            <p>Two charges, two sellers, both on your order from day one. One checkout collects them and sends each one where it belongs.</p>
+            <h2 className="d">Where your money goes, with a half as the example</h2>
+            <p>You make one payment to Ranch Cuts, and both parts are on your order from day one. We pay the ranch and the butcher.</p>
           </div>
           <div className="pay-explainer">
             <div className="pay-line">
-              <span className="tag">To {LIVE.ranch.short} Ranch</span>
+              <span className="tag">Goes to {LIVE.ranch.short} Ranch</span>
               <div className="d pay-num">{money(half.animal)}</div>
               <p><b>Your half of the steer.</b> A fixed price, set by the ranch. Your {money(DEPOSIT)} deposit counts toward it.</p>
             </div>
             <div className="pay-plus" aria-hidden="true">+</div>
             <div className="pay-line">
-              <span className="tag">To {LIVE.butcher.short}</span>
+              <span className="tag">Goes to {LIVE.butcher.short}</span>
               <div className="d pay-num">about {money(half.processing)}</div>
               <p><b>Processing.</b> Harvest, hang, cut, wrap and freeze, at the butcher's posted rates on your steer's actual hanging weight.</p>
             </div>
             <div className="pay-plus" aria-hidden="true">=</div>
             <div className="pay-line total">
-              <span className="tag">All in</span>
+              <span className="tag">You pay Ranch Cuts</span>
               <div className="d pay-num">about {money(half.total)}</div>
               <p>About {half.takehome} lb of beef in your freezer, roughly {money2(half.takehomeRate)} a pound for every cut.</p>
             </div>
           </div>
           <p className="small mute" style={{ marginTop: "var(--space-lg)", maxWidth: "72ch" }}>
-            Ranch Cuts is paid a small share of each sale by the ranch and butcher. It's already inside these prices; there's no
-            separate fee to you. Prices shown are for Ranch Cuts {LIVE.city}. Each ranch sets its own.
+            Ranch Cuts keeps a small share of each sale before paying the ranch and the butcher. It's already inside these prices;
+            there's no separate fee to you. Prices shown are for Ranch Cuts {LIVE.city}. Each ranch sets its own.
           </p>
         </div>
       </section>

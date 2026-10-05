@@ -22,7 +22,7 @@ const FAQ = [
   },
   {
     q: "Who am I actually buying from?",
-    a: "The ranch. You buy a share of one live steer from the partner ranch, which is the seller on your bill of sale. The partner butcher bills you for processing. Ranch Cuts runs the website, the cut sheet and the booking, and never owns the cattle or the beef.",
+    a: "The ranch. You buy a share of one live steer from the partner ranch, which is the seller on your bill of sale, and the partner butcher processes it for you. You pay Ranch Cuts once for everything, and we pay the ranch and the butcher. Ranch Cuts never owns the cattle or the beef.",
   },
   {
     q: "Can I split a steer with friends?",
@@ -46,24 +46,58 @@ export default function Landing() {
 
   return (
     <main>
-      {/* hero */}
-      <section className="page rc-hero">
-        <div className="wide rc-hero-grid">
-          <div className="rc-hero-text rise">
-            <h1 className="d">Your local ranch.<br />Your local butcher.<br /><span className="hl">Your cuts.</span></h1>
-            <p className="lede">
-              Buy a quarter, half or whole steer from a ranch near you, cut exactly your way by a butcher near you. Steaks, roasts
-              and burger all at one price a pound, and you know who raised it.
-            </p>
-            <ZipSearch />
-            <p className="hero-fine">
-              <span>Open now in Denver</span>
-              <span>{PLANNED.length} more metros planned</span>
-              <span>Shares from {money(SHARES.quarter.total)}</span>
+      {/* hero: the deck cover. Navy, the steer bleeding off the right edge */}
+      <section className="rc-cover">
+        <div className="rc-cover-photo" style={{ backgroundImage: `url(${ASSET("angus-steer.jpg")})` }} aria-hidden="true" />
+        <div className="page rc-cover-inner">
+          <div className="wide">
+            <div className="rc-cover-text rise">
+              <span className="tag cover-kicker">Open now in {LIVE.city} · {PLANNED.length} more metros planned</span>
+              <h1 className="d">Your local ranch.<br />Your local butcher.<br /><em className="hl">Your cuts.</em></h1>
+              <p className="lede">
+                Buy a quarter, half or whole steer from a ranch near you, cut exactly your way by a butcher near you. Steaks, roasts
+                and burger all at one price a pound, and you know who raised it.
+              </p>
+              <ZipSearch dark />
+              <p className="hero-fine">
+                <span>Shares from {money(SHARES.quarter.total)}</span>
+                <span>{money(DEPOSIT)} holds any size</span>
+                <span>Pickup at your local butcher</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* four steps, as on the deck's solution slide */}
+      <section className="page section">
+        <div className="wide">
+          <h2 className="d deck-title">One website.<br />Your local ranch. Your local butcher.</h2>
+          <ol className="deck-steps">
+            {STEPS.map((s, i) => (
+              <li key={s.n}>
+                <span className="deck-num" aria-hidden="true">{s.n}</span>
+                {i < STEPS.length - 1 && <span className="deck-arrow" aria-hidden="true" />}
+                <h3 className="d">{s.t}</h3>
+                <p>{s.b}</p>
+              </li>
+            ))}
+          </ol>
+          <div className="statement-band">
+            <p className="d statement">Ribeye and filet under {money2(Math.ceil(SHARES.quarter.takehomeRate * 2) / 2)}/lb. Every cut, one price.</p>
+            <p className="statement-side">
+              Open now: <b>Ranch Cuts {LIVE.city}</b>, beef from {LIVE.ranch.name}, cut at {LIVE.butcher.name}.{" "}
+              <Link to={`/local/${LIVE.slug}`}>Meet them</Link>
             </p>
           </div>
+          <p style={{ marginTop: "var(--space-xl)" }}><Link to="/how-it-works" className="btn btn-ghost">The whole process, step by step</Link></p>
+        </div>
+      </section>
 
-          <Link to={`/local/${LIVE.slug}`} className="listing-card rise rise-1" aria-label={`Ranch Cuts ${LIVE.city}: see the partnership`}>
+      {/* the live partnership */}
+      <section className="page section section-tint">
+        <div className="wide">
+          <Link to={`/local/${LIVE.slug}`} className="listing-card listing-wide" aria-label={`Ranch Cuts ${LIVE.city}: see the partnership`}>
             <div className="listing-photo" style={{ backgroundImage: `url(${ASSET("angus-steer.jpg")})` }} />
             <div className="listing-body">
               <div className="listing-tag"><span className="tag">Open now</span></div>
@@ -77,25 +111,6 @@ export default function Landing() {
               <span className="listing-cta">Meet the ranch and the butcher</span>
             </div>
           </Link>
-        </div>
-      </section>
-
-      {/* four steps */}
-      <section className="page section section-tint">
-        <div className="wide">
-          <div className="section-head">
-            <h2 className="d">How a share works</h2>
-          </div>
-          <ol className="steps4">
-            {STEPS.map((s) => (
-              <li key={s.n}>
-                <span className="step-tag" aria-hidden="true">{s.n}</span>
-                <h3 className="d">{s.t}</h3>
-                <p>{s.b}</p>
-              </li>
-            ))}
-          </ol>
-          <p style={{ marginTop: "var(--space-xl)" }}><Link to="/how-it-works" className="btn btn-ghost">The whole process, step by step</Link></p>
         </div>
       </section>
 
@@ -246,8 +261,9 @@ export default function Landing() {
             ))}
           </div>
           <p className="small mute" style={{ marginTop: "var(--space-md)", maxWidth: "72ch" }}>
-            <sup>*</sup>Estimates for a typical 1,500 lb steer. Each total is two charges: a fixed price for your share of the steer,
-            paid to the ranch, and processing, billed by the butcher on your steer's actual hanging weight.{" "}
+            <sup>*</sup>Estimates for a typical 1,500 lb steer. Each total covers your share of the steer, a fixed price that goes to
+            the ranch, and processing, which goes to the butcher at its posted rates on your steer's actual hanging weight. You pay
+            Ranch Cuts once; we pay them both.{" "}
             <Link to={`/local/${LIVE.slug}`}>See the Denver breakdown</Link>.
           </p>
         </div>
@@ -299,7 +315,7 @@ export default function Landing() {
           </div>
           <div className="closing-side">
             <span className="tag">Ranchers and butchers</span>
-            <p>Sell your steers by the share and fill your kill slots with booked families. We bring the customers and the paperwork.</p>
+            <p>Sell your steers by the share and fill your kill slots with booked families. We bring the customers, collect every payment and pay you.</p>
             <Link to="/about#partner" className="btn btn-on-dark">Partner with us</Link>
           </div>
         </div>

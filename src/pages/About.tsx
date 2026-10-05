@@ -69,14 +69,14 @@ export default function About() {
             <ul className="about-list">
               <li><b>A marketplace for steer shares.</b> One website where families find their local ranch and butcher, reserve a share and build a cut sheet.</li>
               <li><b>A partnership in every place.</b> One partner ranch and one partner butcher who work together, named on every share.</li>
-              <li><b>The paperwork.</b> Bills of sale, cut sheets in each owner's name, the harvest calendar, payments to the ranch and butcher, reminders and pickup.</li>
+              <li><b>The paperwork and the payments.</b> Bills of sale, cut sheets in each owner's name, the harvest calendar, reminders and pickup. Families pay Ranch Cuts once, and we pay the ranch and the butcher.</li>
               <li><b>One standard everywhere.</b> The same <Link to="/how-it-works">share rules</Link> in every state, written to the strictest one.</li>
             </ul>
           </div>
           <div>
             <h2 className="d">What it isn't</h2>
             <ul className="about-list not">
-              <li><b>A meat company.</b> We never own the cattle or the beef, and we never handle it. The ranch sells the share; the butcher processes it for you.</li>
+              <li><b>A meat company.</b> We never own the cattle or the beef, and we never handle the meat. The ranch sells the share; the butcher processes it for you.</li>
               <li><b>A blend.</b> Your beef is one steer from one ranch. Not trim from many animals, not a box of assorted cuts.</li>
               <li><b>Shipped.</b> Custom-cut beef stays in its state and goes from the butcher to you. No warehouses, no couriers.</li>
               <li><b>A middleman's markup.</b> Ranch Cuts earns a small share of each sale from the ranch and the butcher. It's inside the price, not added on top.</li>
@@ -151,11 +151,11 @@ export default function About() {
           <div className="partner-cols">
             <div>
               <span className="tag">For ranchers</span>
-              <p>Sell your finished steers by the share at a price you set, well above what the sale barn pays. We bring the families, the deposits and the paperwork. You keep your name on every share.</p>
+              <p>Sell your finished steers by the share at a price you set, well above what the sale barn pays. We bring the families and the paperwork, collect every payment and pay you. No invoices to chase. You keep your name on every share.</p>
             </div>
             <div>
               <span className="tag">For butchers</span>
-              <p>Fill harvest slots with steers whose owners have already paid a deposit and sent a clean cut sheet. You bill your own processing at your own rates. No extra insurance asked.</p>
+              <p>Fill harvest slots with steers whose owners have already paid a deposit and sent a clean cut sheet. You set your own processing rates and Ranch Cuts pays them. No extra insurance asked.</p>
             </div>
             <a href={`mailto:${SUPPORT.partnersEmail}?subject=${encodeURIComponent("Partnering with Ranch Cuts")}`} className="btn btn-on-dark btn-big">Email {SUPPORT.partnersEmail}</a>
           </div>
