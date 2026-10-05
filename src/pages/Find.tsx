@@ -106,7 +106,7 @@ function Result({ place, cov }: { place: ZipPlace; cov: Coverage }) {
             </p>
           )}
           <div className="hero-actions">
-            <Link to={`/local/${p.slug}`} className="btn btn-accent btn-big">Meet your ranch and butcher</Link>
+            <Link to={`/local/${p.slug}?zip=${place.zip}`} className="btn btn-accent btn-big">Meet your rancher and butcher</Link>
             <Link to="/order" className="btn btn-ghost btn-big">Reserve a share</Link>
           </div>
         </div>

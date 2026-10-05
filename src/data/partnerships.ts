@@ -24,6 +24,7 @@ export interface Ranch {
   summary: string;       // one line, approved claims only
   story: string;
   claims: string[];      // approved claims only
+  facts: { k: string; v: string }[];  // the profile table on the partnership page
 }
 
 export interface Butcher {
@@ -39,6 +40,8 @@ export interface Butcher {
   about: string;
   /* the butcher's posted processing rates (billed to each owner) */
   rates: { kill: number; perLbHanging: number; perQuarterSplit: number };
+  facts: { k: string; v: string }[];  // the profile table on the partnership page
+  inspection: string;                 // plain-language plant status, sourced
   hang: string;          // dry-age, said plainly
 }
 
@@ -89,6 +92,15 @@ export const PARTNERSHIPS: Partnership[] = [
       story:
         "Thunderbolt raises Angus cattle on pasture in northeast Colorado and grain-finishes them on its own Colorado pens for rich marbling. The ranch keeps ownership of every animal from conception to harvest. No sale barns, no middlemen.",
       claims: ["Angus genetics", "Pasture raised in Colorado", "Grain finished", "Owned from conception to harvest", "Typically grades Choice or Prime"],
+      /* Source: Thunderbolt Ranch one-pager (Thunderbolt_Ranch_Beef_Order_Info.pdf) and thunderboltbeef.com */
+      facts: [
+        { k: "Cattle", v: "Angus" },
+        { k: "Raised", v: "On pasture, on the ranch, in northeast Colorado" },
+        { k: "Finished", v: "On grain, on the ranch's own Colorado pens, for marbling" },
+        { k: "Ownership", v: "From conception to harvest. No sale barns, no middlemen" },
+        { k: "Typical grade", v: "USDA Choice or Prime" },
+        { k: "One animal", v: "Every steak, roast and pound of ground beef in your share comes from one steer" },
+      ],
     },
     butcher: {
       name: "Colorado Custom Meat Co",
@@ -103,6 +115,17 @@ export const PARTNERSHIPS: Partnership[] = [
       about:
         "A Colorado butcher in Kersey, about an hour northeast of Denver. Your steer hangs here for 14 days, then it is cut to your sheet, vacuum sealed, labeled with your name and frozen.",
       rates: { kill: 135, perLbHanging: 1.1, perQuarterSplit: 20 },
+      inspection: "USDA-inspected plant (establishment M6161, inspection granted April 2022)",
+      /* Sources: USDA FSIS establishment listing (M6161+V6161); Thunderbolt one-pager (hang,
+         storage fee); the CCMC cutting-instructions form in public/ccmc-cut-sheet.pdf */
+      facts: [
+        { k: "Plant", v: "USDA-inspected, establishment M6161, in Kersey, Weld County" },
+        { k: "Processes", v: "Beef, pork, lamb and goat, for ranchers and the families who own the animals" },
+        { k: "The hang", v: "14 days on the rail to dry-age and tenderize before cutting" },
+        { k: "Your cuts", v: "Cut to your own sheet on the butcher's cutting form, which our cut-sheet guide fills in for you" },
+        { k: "Packaging", v: "Vacuum sealed, labeled with your name and Not For Sale, frozen and boxed" },
+        { k: "Pickup window", v: "A week from the day it's ready, then $10 a day for storage" },
+      ],
       hang: "14-day dry age",
     },
     pickupOnly: true,

@@ -1,0 +1,25 @@
+/* Partnership page ("meet your rancher and butcher"). Kept in its own
+   file so it ships separately from the global stylesheet. */
+
+.trip-grid { max-width: none !important; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-lg); align-items: start; }
+@media (max-width: 860px) { .trip-grid { grid-template-columns: 1fr; } }
+.trip { background: var(--paper); border: 1px solid var(--rule); border-radius: var(--radius); padding: var(--space-lg); display: grid; gap: var(--space-xs); }
+.trip .tag { color: var(--muted); }
+.trip-big { font-size: clamp(2rem, 4vw, 2.8rem); color: var(--navy); line-height: 1.05; }
+.trip .zip-search { margin-top: var(--space-xs); }
+.linkish { color: inherit; text-decoration: underline; padding: 0; font: inherit; }
+
+.profile { display: grid; border-top: 1px solid var(--rule); margin: 0; }
+.profile > div { display: grid; grid-template-columns: 8.5rem 1fr; gap: var(--space-md); padding: 9px 0; border-bottom: 1px solid var(--rule); font-size: 0.93rem; }
+.profile dt { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding-top: 3px; }
+.profile dd { margin: 0; color: var(--ink-2); }
+@media (max-width: 520px) { .profile > div { grid-template-columns: 1fr; gap: 2px; } }
+.meet-contact { display: grid; gap: 4px; }
+.meet-contact .tag { color: var(--muted); }
+
+.season-steps { list-style: none; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-lg); padding: 0; margin: 0; }
+.season-steps li { display: grid; gap: 6px; align-content: start; }
+.season-steps b { font-family: var(--font-display); font-weight: 900; font-size: 1.3rem; letter-spacing: -0.01em; }
+.season-steps p { color: var(--muted); font-size: 0.93rem; }
+@media (max-width: 900px) { .season-steps { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 520px) { .season-steps { grid-template-columns: 1fr; } }

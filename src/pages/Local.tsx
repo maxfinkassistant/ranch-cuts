@@ -1,9 +1,11 @@
-import { Suspense, lazy } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Suspense, lazy, useEffect, useState } from "react";
+import { Link, useParams, useSearchParams } from "react-router-dom";
+import ZipSearch from "../components/ZipSearch";
 import ColoradoMap from "../components/ColoradoMap";
 import SteerTracker from "../components/SteerTracker";
 import WaitlistForm from "../components/WaitlistForm";
-import { PLANNED, partnershipBySlug, PARTNERSHIPS } from "../data/partnerships";
+import { PLANNED, partnershipBySlug, PARTNERSHIPS, lookupZip, coverageFor, type ZipPlace, type Coverage } from "../data/partnerships";
+import "../styles/local.css";
 import {
   SHARES, DEPOSIT, SEASONS, CURRENT_SEASON, NEXT_SEASON, STORAGE_NOTE, ASSET, IMAGES,
   money, money2,
@@ -13,8 +15,28 @@ const UsMap = lazy(() => import("../components/UsMap"));
 
 const lowerFirst = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
 
+const driveTime = (miles: number) => {
+  const mins = Math.round(((miles / 55) * 60) / 5) * 5;
+  return mins < 60 ? `${mins} minutes` : `${Math.floor(mins / 60)} hr${mins % 60 ? ` ${mins % 60} min` : ""}`;
+};
+
+/* ?zip=80202 personalizes the page: the zip search links here with it. */
+function useZip() {
+  const [params, setParams] = useSearchParams();
+  const zip = params.get("zip") ?? "";
+  const [res, setRes] = useState<{ place: ZipPlace; cov: Coverage } | null>(null);
+  useEffect(() => {
+    let alive = true;
+    setRes(null);
+    if (zip) lookupZip(zip).then((place) => { if (alive && place) setRes({ place, cov: coverageFor(place) }); });
+    return () => { alive = false; };
+  }, [zip]);
+  return { zip, res, setZip: (z: string) => setParams({ zip: z }, { replace: true }) };
+}
+
 export default function Local() {
   const { slug } = useParams();
+  const { zip, res, setZip } = useZip();
   const p = partnershipBySlug(slug);
   const planned = PLANNED.find((m) => m.slug === slug);
 
@@ -45,7 +67,11 @@ export default function Local() {
         <div className="page rc-cover-inner">
           <div className="wide">
             <div className="rc-cover-text">
-              <span className="tag cover-kicker">Open now · {p.stateName}</span>
+              <span className="tag cover-kicker">
+                {res && (res.cov.kind === "covered" || res.cov.kind === "reachable") && res.cov.partnership.slug === p.slug
+                  ? `Your rancher and butcher for ${res.place.place} ${res.place.zip}`
+                  : `Open now · ${p.stateName}`}
+              </span>
               <h1 className="local-title"><img src={ASSET("brand/ranchcuts-horizontal-cream.svg")} alt="Ranch Cuts" width={438} height={106} /><span className="city">{p.city}</span></h1>
               <p className="local-lockup">
                 Beef from <b>{p.ranch.name}</b>,<br />cut at <b>{p.butcher.name}</b>.
@@ -64,17 +90,20 @@ export default function Local() {
       </section>
 
       <section className="page local-tracker">
-        <div className="wide"><SteerTracker /></div>
+        <div className="wide trip-grid">
+          <TripPanel p={p} zip={zip} res={res} onZip={setZip} />
+          <SteerTracker />
+        </div>
       </section>
 
-      {/* meet the ranch / meet the butcher */}
+      {/* meet your rancher and butcher */}
       <section id="meet" className="page section section-tint">
         <div className="wide">
           <div className="section-head">
-            <h2 className="d">Two local businesses, named on every share</h2>
+            <h2 className="d">Meet your rancher and butcher</h2>
             <p>
-              {p.ranch.name} sells you the share of the steer and is the seller on your bill of sale. {p.butcher.name} harvests
-              it, hangs it and cuts it to your sheet. You pay Ranch Cuts once, and we pay them both.
+              {p.ranch.name} raises your steer and sells you your share; it's the seller on your bill of sale.{" "}
+              {p.butcher.name} harvests it, hangs it and cuts it to your sheet. You pay Ranch Cuts once, and we pay them both.
             </p>
           </div>
           <div className="meet-grid">
@@ -82,19 +111,20 @@ export default function Local() {
               <div className="meet-top">
                 {p.ranch.logo && <img src={ASSET(p.ranch.logo)} alt="" className="meet-logo" />}
                 <div>
-                  <span className="tag">The ranch</span>
+                  <span className="tag">Your rancher</span>
                   <h3 className="d">{p.ranch.name}</h3>
                   <p className="small mute">{p.ranch.region}</p>
                 </div>
               </div>
               <p>{p.ranch.story}</p>
-              <ul className="claims">
-                {p.ranch.claims.map((c) => <li key={c}>{c}</li>)}
-              </ul>
-              <p className="small">
-                Questions about the cattle? Call or text {p.ranch.contact.name} at{" "}
-                <a href={`tel:${p.ranch.contact.phone}`}>{p.ranch.contact.phone}</a>.
-              </p>
+              <dl className="profile">
+                {p.ranch.facts.map((f) => <div key={f.k}><dt>{f.k}</dt><dd>{f.v}</dd></div>)}
+              </dl>
+              <div className="meet-contact">
+                <span className="tag">Questions about the cattle</span>
+                <p>Call or text {p.ranch.contact.name} at <a href={`tel:${p.ranch.contact.phone}`}>{p.ranch.contact.phone}</a>.</p>
+                <p className="small mute">We don't publish ranch addresses. The ranch is in {lowerFirst(p.ranch.region)}.</p>
+              </div>
             </article>
 
             <article className="meet butcher">
@@ -103,12 +133,15 @@ export default function Local() {
                   <svg viewBox="-24 -30 48 56" width="48" height="56"><path d="M-18 2 L-18 -12 L0 -26 L18 -12 L18 2 Z" /><rect x="-18" y="2" width="36" height="20" /><rect className="door" x="-5" y="8" width="10" height="14" /></svg>
                 </div>
                 <div>
-                  <span className="tag">The butcher</span>
+                  <span className="tag">Your butcher</span>
                   <h3 className="d">{p.butcher.name}</h3>
                   <p className="small mute">{p.butcher.city}, {p.stateName}</p>
                 </div>
               </div>
               <p>{p.butcher.about}</p>
+              <dl className="profile">
+                {p.butcher.facts.map((f) => <div key={f.k}><dt>{f.k}</dt><dd>{f.v}</dd></div>)}
+              </dl>
               <table className="rate-table">
                 <caption className="tag">Processing, at the butcher's posted rates</caption>
                 <tbody>
@@ -118,12 +151,30 @@ export default function Local() {
                   <tr><td>Patties (optional)</td><td className="n">$0.50/lb</td></tr>
                 </tbody>
               </table>
-              <p className="small">
-                Pickup: <b>{p.butcher.address}</b>, <a href={`tel:${p.butcher.phone}`}>{p.butcher.phone}</a>.{" "}
-                <a href={directions} target="_blank" rel="noreferrer">Get directions</a>
-              </p>
+              <div className="meet-contact">
+                <span className="tag">Pickup</span>
+                <p><b>{p.butcher.address}</b>, <a href={`tel:${p.butcher.phone}`}>{p.butcher.phone}</a></p>
+                <p className="small"><a href={directions} target="_blank" rel="noreferrer">Get directions to {p.butcher.city}</a></p>
+              </div>
             </article>
           </div>
+        </div>
+      </section>
+
+      {/* the season, start to finish */}
+      <section className="page section">
+        <div className="wide">
+          <div className="section-head">
+            <h2 className="d">Your {season.name} harvest, start to finish</h2>
+            <p>Every steer for {season.label} is harvested together. A steer goes to the butcher only once all of its shares are sold.</p>
+          </div>
+          <ol className="season-steps">
+            <li><span className="deck-num">1</span><b>Reserve</b><p>A {money(DEPOSIT)} deposit holds your share. Build your cut sheet any time before harvest.</p></li>
+            <li><span className="deck-num">2</span><b>Harvest</b><p>Your steer goes from {p.ranch.name} to {p.butcher.name} in {p.butcher.city}.</p></li>
+            <li><span className="deck-num">3</span><b>14-day hang</b><p>It dry-ages on the rail for two weeks to tenderize.</p></li>
+            <li><span className="deck-num">4</span><b>Cut to your sheet</b><p>Vacuum sealed, labeled with your name, frozen and boxed.</p></li>
+            <li><span className="deck-num">5</span><b>Pickup</b><p>{season.pickup} in {p.butcher.city}. We tell you the day it's ready.</p></li>
+          </ol>
         </div>
       </section>
 
@@ -227,6 +278,41 @@ export default function Local() {
         </div>
       </section>
     </main>
+  );
+}
+
+type P = NonNullable<ReturnType<typeof partnershipBySlug>>;
+
+/* "Your trip": the drive from the family's zip to pickup, or a zip checker. */
+function TripPanel({ p, zip, res, onZip }: { p: P; zip: string; res: { place: ZipPlace; cov: Coverage } | null; onZip: (z: string) => void }) {
+  if (res && (res.cov.kind === "covered" || res.cov.kind === "reachable") && res.cov.partnership.slug === p.slug) {
+    const { place, cov } = res;
+    const from = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(`${place.zip}`)}&destination=${encodeURIComponent(`${p.butcher.name}, ${p.butcher.address}`)}`;
+    return (
+      <div className="trip">
+        <span className="tag">Your trip to pickup</span>
+        <p className="d trip-big">About {cov.drive} miles</p>
+        <p>From {place.place} ({place.zip}) to {p.butcher.name} in {p.butcher.city}, roughly {driveTime(cov.drive)} each way. You make the drive once, when your beef is ready.</p>
+        {cov.kind === "reachable" && <p className="small mute">That's a longer drive than most of our families make. Many split it with whoever shares their steer.</p>}
+        <p className="small"><a href={from} target="_blank" rel="noreferrer">Directions from {place.zip}</a> · <button className="linkish" onClick={() => onZip("")}>Use a different zip</button></p>
+      </div>
+    );
+  }
+  if (res) {
+    return (
+      <div className="trip">
+        <span className="tag">{res.place.place}, {res.place.state}</span>
+        <p>Ranch Cuts {p.city} serves {p.stateName} only: the ranch, the butcher and your pickup are always in the same state.</p>
+        <p className="small"><Link to={`/find/${res.place.zip}`}>See what's near {res.place.zip}</Link></p>
+      </div>
+    );
+  }
+  return (
+    <div className="trip">
+      <span className="tag">How far is pickup from you?</span>
+      <p>Enter your zip code to see the drive to {p.butcher.city}.{zip ? ` We couldn't find ${zip}.` : ""}</p>
+      <ZipSearch size="small" id="trip-zip" cta="Check" onZip={onZip} />
+    </div>
   );
 }
 
