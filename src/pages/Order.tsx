@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  SHARES, DEPOSIT, PROCESSOR, STORAGE_NOTE, SUPPORT, LISTING_NAME,
+  SHARES, DEPOSIT, PROCESSOR, STORAGE_NOTE, SUPPORT, LISTING_NAME, PREVIEW, THUNDERBOLT_STORE,
   SEASONS, CURRENT_SEASON, NEXT_SEASON, seasonOf,
   MAIN_CUTS, EXTRA_GROUPS, RIB_CHOICES, LOIN_CHOICES,
   RIB_YIELD, RIB_ROAST_LBS, TBONE_YIELD, STRIP_YIELD, FILET_YIELD,
@@ -40,6 +40,30 @@ const QUESTIONS = [
 ] as const;
 
 export default function Order() {
+  return PREVIEW ? <PreviewOrder /> : <OrderFlow />;
+}
+
+/* Preview launch: no order system behind the site yet, so nothing is collected here. */
+function PreviewOrder() {
+  return (
+    <main className="page section">
+      <div className="wide" style={{ maxWidth: 760 }}>
+        <span className="tag eyebrow">Reservations open soon</span>
+        <h1 className="d">Ranch Cuts is in preview.</h1>
+        <p className="lede" style={{ marginTop: "var(--space-lg)" }}>
+          You can't reserve a share on this site yet. If you're in the Denver area, you can buy beef from {LIVE.ranch.name}, cut
+          at {LIVE.butcher.name}, today on the ranch's own website. Its own prices and terms apply there.
+        </p>
+        <div className="hero-actions">
+          <a href={THUNDERBOLT_STORE} className="btn btn-accent btn-big" target="_blank" rel="noreferrer">Order at thunderboltbeef.com</a>
+          <Link to={`/local/${LIVE.slug}`} className="btn btn-ghost btn-big">Meet the Denver partnership</Link>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function OrderFlow() {
   const [share, setShare] = useState<ShareId | null>(null);
   const [q, setQ] = useState(-1);           // -1 = share pick, QUESTIONS.length = review
   const [a, setA] = useState<CutSheetAnswers>(defaultCutSheet);

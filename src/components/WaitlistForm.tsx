@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { submitWaitlist } from "../lib/api";
+import { PREVIEW } from "../data/config";
 
 /* Waitlist sign-ups are the demand map: they decide which planned
    metros open first. Email only, nothing else asked. */
@@ -17,6 +18,14 @@ export default function WaitlistForm({ zip, place, state, nearest, cta = "Tell m
     if (r.ok) setStatus("done");
     else { setErr(r.error ?? "That didn't go through. Try again in a minute."); setStatus("error"); }
   };
+  if (PREVIEW) {
+    return (
+      <p className="small find-note" role="note">
+        <b>Sign-ups open when Ranch Cuts launches.</b> This site is a preview, so we aren't collecting emails yet. Check back at
+        ranchcuts.com.
+      </p>
+    );
+  }
   if (status === "done") {
     return (
       <div className="waitlist-done" role="status">

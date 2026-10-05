@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink, Link, Outlet, useLocation } from "react-router-dom";
-import { SEASONS, CURRENT_SEASON, NEXT_SEASON, SUPPORT, ASSET } from "../data/config";
+import { SEASONS, CURRENT_SEASON, NEXT_SEASON, SUPPORT, ASSET, PREVIEW, THUNDERBOLT_STORE } from "../data/config";
 import { LIVE, PLANNED } from "../data/partnerships";
 import { useAvailability, seasonFull } from "../lib/availability";
 
@@ -15,12 +15,18 @@ export default function Layout() {
   return (
     <>
       <div className="site-banner">
+        {PREVIEW ? (
+          <a href={THUNDERBOLT_STORE} target="_blank" rel="noreferrer">
+            <b>PREVIEW SITE: RESERVATIONS OPEN SOON.</b> DENVER BEEF IS ON SALE NOW AT THUNDERBOLTBEEF.COM
+          </a>
+        ) : (
         <Link to={`/local/${LIVE.slug}`}>
           <b>NOW OPEN: RANCH CUTS {LIVE.city.toUpperCase()}</b>
           {seasonFull(a)
             ? <> {season.label.toUpperCase()} IS FULL, BOOKING {next.label.toUpperCase()}</>
             : <> {season.label.toUpperCase()} HARVEST, {a.known && a.reserved > 0 ? `${a.reserved} OF ${a.capacity}` : a.capacity} STEERS{a.known && a.reserved > 0 ? " RESERVED" : ""}</>}
         </Link>
+        )}
         <span className="banner-sep" aria-hidden="true" />
         <Link to="/map" className="banner-planned">{PLANNED.length} MORE METROS PLANNED</Link>
       </div>
@@ -36,7 +42,7 @@ export default function Layout() {
           <NavLink to="/how-it-works">How it works</NavLink>
           <NavLink to="/map">Map</NavLink>
           <NavLink to="/about">About us</NavLink>
-          <NavLink to="/track">Track an order</NavLink>
+          {!PREVIEW && <NavLink to="/track">Track an order</NavLink>}
           <Link to="/find" className="btn btn-solid nav-cta">Find your ranch</Link>
         </nav>
       </header>
@@ -56,7 +62,7 @@ export default function Layout() {
             <Link to="/find">Find your ranch</Link>
             <Link to="/map">Map of partnerships</Link>
             <Link to="/how-it-works">How it works</Link>
-            <Link to="/track">Track an order</Link>
+            {!PREVIEW && <Link to="/track">Track an order</Link>}
           </div>
           <div>
             <span className="tag">Ranch Cuts</span>
@@ -76,7 +82,7 @@ export default function Layout() {
             which is the seller of record, and processed by the partner butcher. Families pay Ranch Cuts, which pays the ranch and
             the butcher. Ranch Cuts never owns the cattle or the beef. Beef processed for owners is labeled Not For Sale.
           </p>
-          <p>Zip code data: GeoNames (CC BY 4.0). State outlines: U.S. Census Bureau. <Link to="/customers">Ranch office</Link></p>
+          <p>Zip code data: GeoNames (CC BY 4.0). State outlines: U.S. Census Bureau.{!PREVIEW && <> <Link to="/customers">Ranch office</Link></>}</p>
         </div>
       </footer>
     </>

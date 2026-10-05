@@ -146,6 +146,12 @@ export const LISTING_NAME = `Ranch Cuts ${LIVE.city}`;
 /* Ranch Cuts support (the platform, not the partners). */
 export const SUPPORT = { email: "hello@ranchcuts.com", partnersEmail: "partners@ranchcuts.com" };
 
+/* Preview launch (VITE_PREVIEW=1, set in the GitHub Pages workflow): the site is public
+   but takes no orders or sign-ups, because no backend is wired yet. Ordering points to
+   Thunderbolt Ranch's own live store instead. Turn it off once docs/LAUNCH.md is done. */
+export const PREVIEW = import.meta.env.VITE_PREVIEW === "1";
+export const THUNDERBOLT_STORE = "https://thunderboltbeef.com";
+
 /* ---------------- brand copy (substantiated only) ----------------
    Approved claims: Colorado cattle / ranch / butcher; Angus;
    pasture-raised in Colorado; grain-finished; ownership from
