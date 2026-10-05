@@ -27,7 +27,7 @@ bun run build      # dist/, plus dist/404.html for static hosts
 | `/find`, `/find/:zip` | Zip search. Four outcomes: covered (same state, easy drive), reachable (same state, long drive), planned metro (waitlist), not yet (waitlist) |
 | `/map` | National map (Albers USA SVG): the live partnership, 16 planned metros, zip lookup that zooms in, planned-metro list by state |
 | `/local/:slug` | A partnership page: lockup, meet the ranch, meet the butcher (posted processing rates, directions), maps, prices with the two-line split, harvest calendar. Planned slugs (e.g. `/local/omaha`) show a waitlist page |
-| `/how-it-works` | Who does what, six steps, who you pay (two charges, two sellers), what comes out of one steer, the share standard in plain English |
+| `/how-it-works` | Who does what, six steps, who you pay (one payment to Ranch Cuts, itemized by where it goes), what comes out of one steer, the share standard in plain English |
 | `/about` | Why Ranch Cuts exists ($3,270 at the sale barn vs $7,233 at the store), what it is and isn't, the first partnership, how partners are chosen, rancher/butcher contact |
 | `/order` | Share pick, 13-question cut-sheet wizard, review with the two-line price split and required disclosures, $250 deposit, confirmation with the filled CCMC PDF |
 | `/track/:code` | Order status and itemized balance (sample: `RC-SAMPLE1`) |
@@ -40,8 +40,8 @@ bun run build      # dist/, plus dist/404.html for static hosts
   regions; never publish a ranch address. The order flow is bound to `LIVE` (the first partnership) until
   there is a second one.
 - `src/data/config.ts`: pricing (model base case, rev 4 final: quarter $7.34 / half $7.09 / whole $6.84 per lb
-  hanging-equivalent at $220.67/cwt fed cattle), the share split (fixed animal price to the ranch + processing
-  billed by the butcher), seasons, the cut-sheet wizard and the grocery basket.
+  hanging-equivalent at $220.67/cwt fed cattle), the share split (fixed animal price that goes to the ranch +
+  processing that goes to the butcher, both paid to Ranch Cuts), seasons, the cut-sheet wizard and the grocery basket.
 - `public/zip/<prefix>.json`: 40,979 zip centroids split by first three digits (GeoNames, CC BY 4.0).
   `src/data/usStates.ts`: state outlines (us-atlas). Rebuild both with `bun run data` after downloading the
   sources into `data-src/` (URLs in the scripts).
@@ -49,5 +49,6 @@ bun run build      # dist/, plus dist/404.html for static hosts
 ## Backend
 
 Same pattern as Thunderbolt: `apps-script/Code.gs` (Google Sheet CRM + emails, orders and the waitlist) and a
-Stripe Payment Link for the deposit, wired by `VITE_BACKEND_URL` and `VITE_STRIPE_PAYMENT_LINK`. With neither
+Stripe Payment Link for the deposit on Ranch Cuts' own Stripe account (Ranch Cuts collects every payment and
+pays out the ranch and the butcher), wired by `VITE_BACKEND_URL` and `VITE_STRIPE_PAYMENT_LINK`. With neither
 set the site runs in demo mode and keeps orders and waitlist sign-ups in the browser. See `docs/LAUNCH.md`.

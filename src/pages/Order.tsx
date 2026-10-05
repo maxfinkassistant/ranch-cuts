@@ -127,7 +127,7 @@ export default function Order() {
           <div className="pay-panel" style={{ marginTop: "var(--space-lg)", textAlign: "left" }}>
             <span className="tag">One more step</span>
             <p className="small" style={{ marginBottom: "var(--space-md)" }}>
-              Your share is held once the {money(DEPOSIT)} deposit is in. It goes to {PAYABLE_TO} and
+              Your share is held once the {money(DEPOSIT)} deposit is in. It's paid to {PAYABLE_TO} and
               applies to your share of the steer. Card payment is secure through Stripe; your order
               code travels with it so it can be matched up.
             </p>
@@ -139,9 +139,9 @@ export default function Order() {
           <div className="group-note" style={{ marginTop: "var(--space-lg)", textAlign: "left" }}>
             <span className="tag">Deposit</span>
             <span>
-              {RANCH_CONTACT.name} at {LIVE.ranch.name} will reach out to collect your {money(DEPOSIT)} deposit,
-              which applies to your share of the steer. Or call or text him at {RANCH_CONTACT.phone} with
-              order code <strong className="mono">{placed.code}</strong>.
+              {PAYABLE_TO} will email you a payment link for your {money(DEPOSIT)} deposit, which applies to
+              your share of the steer. Questions about the cattle? Call or text {RANCH_CONTACT.name} at{" "}
+              {LIVE.ranch.name}, {RANCH_CONTACT.phone}, with order code <strong className="mono">{placed.code}</strong>.
             </span>
           </div>
         )}
@@ -152,7 +152,7 @@ export default function Order() {
             ["Bill of sale", `${LIVE.ranch.name} confirms your bill of sale and the ear tag of your steer. You own your share before harvest.`],
             [`This ${season.name}`, `Harvest. Your beef dry-ages 14 days at ${LIVE.butcher.name} in ${LIVE.butcher.city}.`],
             ["After the hang", "Cut and packaged to your cut sheet, vacuum sealed, and labeled Not For Sale with your name."],
-            [season.pickup, `Pickup at ${LIVE.butcher.name} in ${LIVE.butcher.city}, on a date we'll confirm. About ${ps.takehome} lb, frozen and boxed, so leave room in the vehicle. Due then: ${money(pc.animalBalance)} to ${PAYABLE_TO}, plus processing (about ${money(pc.processing)}) billed by ${LIVE.butcher.name}.`],
+            [season.pickup, `Pickup at ${LIVE.butcher.name} in ${LIVE.butcher.city}, on a date we'll confirm. About ${ps.takehome} lb, frozen and boxed, so leave room in the vehicle. Due then, paid to ${PAYABLE_TO}: about ${money(pc.balance)}, which is ${money(pc.animalBalance)} for your share of the steer (goes to ${LIVE.ranch.name}) plus processing, about ${money(pc.processing)} (goes to ${LIVE.butcher.name}).`],
           ].map(([k, v]) => (
             <div className="next-step" key={k}>
               <div className="when">{k}</div>
@@ -242,10 +242,11 @@ export default function Order() {
         )}
 
         <p className="small mute measure" style={{ marginBottom: "var(--space-lg)" }}>
-          <sup>*</sup>Estimates based on a typical 1,500 lb steer, about 900 lb hanging. The all-in total
-          is two charges: your share of the steer, a fixed price sold by {LIVE.ranch.name}, and
-          processing, billed by {LIVE.butcher.name} at its posted rates on your steer's actual hanging
-          weight. Only the processing line can move. Price per pound is shown on hanging weight as an
+          <sup>*</sup>Estimates based on a typical 1,500 lb steer, about 900 lb hanging. You pay the
+          all-in total to {PAYABLE_TO}, itemized by where it goes: your share of the steer, a fixed price
+          that goes to {LIVE.ranch.name}, the seller on your bill of sale, and processing by{" "}
+          {LIVE.butcher.name} at its posted rates on your steer's actual hanging weight, which goes to the
+          butcher. Only the processing line can move. Price per pound is shown on hanging weight as an
           equivalent, to compare with other beef; it isn't how the steer is sold. Next: a short
           walk-through builds your cut sheet, one question at a time, with a photo and a plain-English
           explanation for every cut.
@@ -294,18 +295,18 @@ export default function Order() {
 
           <div style={{ display: "grid", gap: "var(--space-md)", alignContent: "start" }}>
             <div className="pay-panel">
-              <span className="tag">What you'll pay</span>
+              <span className="tag">What you'll pay {PAYABLE_TO}</span>
               <div className="pay-row">
                 <span>
                   Your share of the steer
-                  <span className="sub">Sold by {LIVE.ranch.name}. Fixed price.</span>
+                  <span className="sub">Goes to {LIVE.ranch.name}. Fixed price.</span>
                 </span>
                 <b>{money(cost.animal)}</b>
               </div>
               <div className="pay-row">
                 <span>
                   Processing by {LIVE.butcher.name}
-                  <span className="sub">Billed by the butcher at its posted rates on actual hanging weight. Estimate.</span>
+                  <span className="sub">At its posted rates on actual hanging weight. Goes to the butcher. Estimate.</span>
                 </span>
                 <b>{money(cost.processing)}</b>
               </div>
@@ -314,22 +315,23 @@ export default function Order() {
                 <b>{money(cost.total)}</b>
               </div>
               <div className="pay-row">
-                <span>Deposit today<span className="sub">To {PAYABLE_TO}. Applies to your share of the steer.</span></span>
+                <span>Deposit today<span className="sub">Paid to {PAYABLE_TO}. Applies to your share of the steer.</span></span>
                 <b>{money(cost.deposit)}</b>
               </div>
               <div className="pay-row">
                 <span>
                   Due at pickup
                   <span className="sub">
-                    {money(cost.animalBalance)} to {LIVE.ranch.name}, plus processing (about {money(cost.processing)}) to {LIVE.butcher.name}
+                    Paid to {PAYABLE_TO}: {money(cost.animalBalance)} for your share (goes to {LIVE.ranch.name}), plus processing, about {money(cost.processing)} (goes to {LIVE.butcher.name})
                   </span>
                 </span>
                 <b>{money(cost.balance)}</b>
               </div>
               <p className="pay-fine">
                 You'll sign a bill of sale for a {sh.label.toLowerCase()} share of one ear-tagged steer
-                from {LIVE.ranch.name}, as {sh.owners}. Ranch Cuts books your order and sends your cut
-                sheet; it never takes title to the animal or holds your money. Pickup only, at{" "}
+                from {LIVE.ranch.name}, as {sh.owners}. You pay Ranch Cuts for everything, one payee and
+                one receipt, and Ranch Cuts pays the ranch and the butcher. Ranch Cuts books your order and
+                sends your cut sheet; it never owns the cattle or the beef. Pickup only, at{" "}
                 {PROCESSOR.name}, {PROCESSOR.address}.
               </p>
             </div>
@@ -358,8 +360,8 @@ export default function Order() {
                 <input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} />
                 <span>
                   I understand I'm buying a share of one live steer from {LIVE.ranch.name} by bill of sale,
-                  that processing is billed separately by {LIVE.butcher.name}, and that my beef is for my
-                  household, not for resale.
+                  that I pay {PAYABLE_TO} for my share and for processing by {LIVE.butcher.name}, and that
+                  my beef is for my household, not for resale.
                 </span>
               </label>
             </div>
@@ -387,7 +389,7 @@ export default function Order() {
               <p className="small mute" style={{ textAlign: "center" }}>
                 {STRIPE_PAYMENT_LINK
                   ? "Next: secure card payment through Stripe."
-                  : `${RANCH_CONTACT.name} at ${LIVE.ranch.name} will collect your deposit after you reserve.`}{" "}
+                  : `${PAYABLE_TO} will email you a link to pay your deposit after you reserve.`}{" "}
                 Ranch questions: {RANCH_CONTACT.name}, {RANCH_CONTACT.phone}. Anything else: {SUPPORT.email}.
               </p>
             </div>

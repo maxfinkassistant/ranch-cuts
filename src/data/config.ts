@@ -2,8 +2,11 @@
    Ranch Cuts: product and pricing configuration
    Pricing follows the Ranch Cuts share standard: the rancher sells
    a share of one ear-tagged live animal at a fixed price (seller of
-   record), and the butcher bills its processing to each owner as a
-   separate line. Ranch Cuts never takes title or holds funds.
+   record on the bill of sale), and the butcher's processing at its
+   posted rates is shown as a separate line. The family pays Ranch
+   Cuts for both (one payee, one receipt); Ranch Cuts pays out the
+   ranch (share price less its fee) and the butcher (processing).
+   Ranch Cuts never owns the cattle or the beef.
 
    Prices are the model base case (rev 4 final): sale-barn value
    + 50%, indexed to fed cattle ($220.67/cwt, USDA 5-area, week of
@@ -33,7 +36,8 @@ export const TAKEHOME_YIELD = 0.7;
 export const TAKEHOME_TYP = Math.round(HANGING_TYP * TAKEHOME_YIELD);  // 630
 
 /* Butcher processing for a whole steer (CCMC posted rates on a 900 lb
-   carcass, rounded up as the model does). Billed by the butcher. */
+   carcass, rounded up as the model does). Collected by Ranch Cuts
+   and paid out to the butcher. */
 export const PROCESSING_PER_HEAD = 1250;
 
 /* the grocery yardstick (King Soopers Denver Choice basket, NCBA cut mix) */
@@ -48,8 +52,8 @@ export interface Share {
   rate: number;        // all-in $/lb hanging equivalent
   takehomeRate: number;// all-in $/lb in the freezer
   total: number;       // all-in estimate = animal + processing
-  animal: number;      // FIXED price of the live-animal share, paid to the ranch
-  processing: number;  // estimate, billed by the butcher at its posted rates
+  animal: number;      // FIXED price of the live-animal share (goes to the ranch)
+  processing: number;  // estimate, the butcher's posted rates (goes to the butcher)
   owners: string;      // how many households share the steer
   freezer: string;
   feeds: string;
@@ -131,7 +135,10 @@ export const PROCESSOR = {
 };
 
 export const RANCH_CONTACT = LIVE.ranch.contact;
-export const PAYABLE_TO = LIVE.ranch.sellerOfRecord;
+/** Who the family pays: Ranch Cuts collects everything and pays out the
+    partners. The ranch's LIVE.ranch.sellerOfRecord stays the seller on
+    the bill of sale. */
+export const PAYABLE_TO = "Ranch Cuts";
 export const RANCH_NAME = LIVE.ranch.name;
 export const LISTING_NAME = `Ranch Cuts ${LIVE.city}`;
 
@@ -566,9 +573,11 @@ export const CUT_MEDIA: Record<string, CutMedia> = {
    (apps-script/Code.gs). Orders POST here → Google Sheet CRM +
    notification emails. Empty = local demo mode (browser only).
 
-   STRIPE_PAYMENT_LINK: a Stripe Payment Link for the $250 deposit.
-   The order code is passed as client_reference_id so payments
-   reconcile against the sheet. Empty = "pay Josh directly" copy.  */
+   STRIPE_PAYMENT_LINK: a Stripe Payment Link for the $250 deposit,
+   on Ranch Cuts' own Stripe account (Ranch Cuts collects every
+   payment and pays out the ranch and the butcher). The order code is
+   passed as client_reference_id so payments reconcile against the
+   sheet. Empty = "Ranch Cuts will email a payment link" copy.     */
 
 export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? "";
 export const STRIPE_PAYMENT_LINK = import.meta.env.VITE_STRIPE_PAYMENT_LINK ?? "";

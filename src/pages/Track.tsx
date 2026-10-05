@@ -211,7 +211,7 @@ export default function Track() {
           </div>
           <div className="owed-rows">
             <div className="owed-row">
-              <span>Your share of the steer, sold by {LIVE.ranch.name} (fixed)</span>
+              <span>Your share of the steer, goes to {LIVE.ranch.name} (fixed)</span>
               <b>
                 {money(price.animal)}
                 {price.discount > 0 && <s className="owed-was">{money(price.animalList)}</s>}
@@ -219,7 +219,7 @@ export default function Track() {
             </div>
             <div className="owed-row">
               <span>
-                Processing by {LIVE.butcher.name}, billed by the butcher at its posted rates
+                Processing by {LIVE.butcher.name} at its posted rates, goes to the butcher
                 <span className="of-sub">{price.processingLines.map((l) => `${l.label} ${money2(l.amount)}`).join("; ")}</span>
               </span>
               <b>{money2(price.processing)}</b>
@@ -229,14 +229,14 @@ export default function Track() {
               <b>{money2(price.total)}</b>
             </div>
             <div className="owed-row">
-              <span>Deposit already paid to {LIVE.ranch.name}</span>
+              <span>Deposit already paid to {PAYABLE_TO}</span>
               <b>- {money(price.deposit)}</b>
             </div>
             <div className="owed-row total">
               <span>
                 Due at pickup
                 <span className="of-sub">
-                  {money(price.animalBalance)} to {PAYABLE_TO}, {money2(price.processing)} to {LIVE.butcher.name}
+                  Paid to {PAYABLE_TO}: {money(price.animalBalance)} for your share (goes to {LIVE.ranch.name}), {money2(price.processing)} processing (goes to {LIVE.butcher.name})
                 </span>
               </span>
               <b>{money2(price.balance)}</b>
@@ -249,23 +249,24 @@ export default function Track() {
             </div>
           )}
           <p className="owed-fine">
-            The butcher's own invoice is final for processing. Ranch questions: {RANCH_CONTACT.name},
+            Processing is at the butcher's posted rates on your steer's actual hanging weight. You pay
+            {" "}{PAYABLE_TO}, and Ranch Cuts pays the ranch and the butcher. Ranch questions: {RANCH_CONTACT.name},
             {" "}{RANCH_CONTACT.phone}. Anything else: {SUPPORT.email}.
           </p>
         </div>
       ) : (
         <div className="owed">
           <div className="owed-head">
-            <span className="tag">What you'll pay</span>
+            <span className="tag">What you'll pay {PAYABLE_TO}</span>
             <span className="small">Estimate until your steer is weighed</span>
           </div>
           <div className="owed-rows">
             <div className="owed-row">
-              <span>Your share of the steer, sold by {LIVE.ranch.name} (fixed)</span>
+              <span>Your share of the steer, goes to {LIVE.ranch.name} (fixed)</span>
               <b>{money(est.animal)}</b>
             </div>
             <div className="owed-row">
-              <span>Processing by {LIVE.butcher.name}, billed by the butcher at its posted rates (estimate)</span>
+              <span>Processing by {LIVE.butcher.name} at its posted rates, goes to the butcher (estimate)</span>
               <b>{money(est.processing)}</b>
             </div>
             <div className="owed-row">
@@ -273,22 +274,22 @@ export default function Track() {
               <b>{money(est.total)}</b>
             </div>
             <div className="owed-row">
-              <span>Deposit to {LIVE.ranch.name}, applies to your share of the steer</span>
+              <span>Deposit paid to {PAYABLE_TO}, applies to your share of the steer</span>
               <b>- {money(est.deposit)}</b>
             </div>
             <div className="owed-row total">
               <span>
                 Due at pickup
                 <span className="of-sub">
-                  {money(est.animalBalance)} to {PAYABLE_TO}, about {money(est.processing)} to {LIVE.butcher.name}
+                  Paid to {PAYABLE_TO}: {money(est.animalBalance)} for your share (goes to {LIVE.ranch.name}), about {money(est.processing)} processing (goes to {LIVE.butcher.name})
                 </span>
               </span>
               <b>{money(est.balance)}</b>
             </div>
           </div>
           <p className="owed-fine">
-            Your share of the steer is a fixed price. Processing is billed on your steer's actual hanging
-            weight, so that line can move a little either way. Ranch questions: {RANCH_CONTACT.name},
+            Your share of the steer is a fixed price. Processing is priced on your steer's actual hanging
+            weight, so that line can move a little either way. You pay {PAYABLE_TO} for both. Ranch questions: {RANCH_CONTACT.name},
             {" "}{RANCH_CONTACT.phone}. Anything else: {SUPPORT.email}.
           </p>
         </div>

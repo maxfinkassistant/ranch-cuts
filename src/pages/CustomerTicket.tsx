@@ -110,14 +110,14 @@ export default function CustomerTicket() {
         {price ? (
           <>
             <div className="ticket-row">
-              <span className="k">Share of the steer, {LIVE.ranch.name} (fixed)</span>
+              <span className="k">Share of the steer, goes to {LIVE.ranch.name} (fixed)</span>
               <span className="v">
                 {money(price.animal)}
                 {price.discount > 0 && <>, {money(price.discount)} off {money(price.animalList)}</>}
               </span>
             </div>
             <div className="ticket-row">
-              <span className="k">Processing, billed by {LIVE.butcher.name}</span>
+              <span className="k">Processing by {LIVE.butcher.name}, goes to the butcher</span>
               <span className="v">{money2(price.processing)}</span>
             </div>
             {price.processingLines.map((l) => (
@@ -128,29 +128,29 @@ export default function CustomerTicket() {
             ))}
             <div className="ticket-row"><span className="k">All in</span><span className="v">{money2(price.total)}</span></div>
             <div className="ticket-row"><span className="k">Deposit</span><span className="v">{money(price.deposit)}, paid to {PAYABLE_TO}</span></div>
-            <div className="ticket-row"><span className="k">Animal balance to {PAYABLE_TO}</span><span className="v">{money(price.animalBalance)}</span></div>
-            <div className="ticket-row"><span className="k">Processing to {LIVE.butcher.name}</span><span className="v">{money2(price.processing)}</span></div>
+            <div className="ticket-row"><span className="k">Share balance (goes to {LIVE.ranch.name})</span><span className="v">{money(price.animalBalance)}</span></div>
+            <div className="ticket-row"><span className="k">Processing (goes to {LIVE.butcher.name})</span><span className="v">{money2(price.processing)}</span></div>
             <div className="ticket-total">
-              <span>DUE AT PICKUP</span>
+              <span>DUE AT PICKUP, TO {PAYABLE_TO.toUpperCase()}</span>
               <span className="v">{money2(price.balance)}</span>
             </div>
           </>
         ) : (
           <>
             <div className="ticket-row">
-              <span className="k">Share of the steer, {LIVE.ranch.name} (fixed)</span>
+              <span className="k">Share of the steer, goes to {LIVE.ranch.name} (fixed)</span>
               <span className="v">{money(est.animal)}</span>
             </div>
             <div className="ticket-row">
-              <span className="k">Processing, billed by {LIVE.butcher.name} (est.)</span>
+              <span className="k">Processing by {LIVE.butcher.name}, goes to the butcher (est.)</span>
               <span className="v">{money(est.processing)}</span>
             </div>
             <div className="ticket-row"><span className="k">All in (est.)</span><span className="v">{money(est.total)} at {money2(est.rate)}/lb equivalent</span></div>
             <div className="ticket-row"><span className="k">Deposit</span><span className="v">{money(est.deposit)}, paid to {PAYABLE_TO}</span></div>
-            <div className="ticket-row"><span className="k">Animal balance to {PAYABLE_TO}</span><span className="v">{money(est.animalBalance)}</span></div>
-            <div className="ticket-row"><span className="k">Processing to {LIVE.butcher.name} (est.)</span><span className="v">{money(est.processing)}</span></div>
+            <div className="ticket-row"><span className="k">Share balance (goes to {LIVE.ranch.name})</span><span className="v">{money(est.animalBalance)}</span></div>
+            <div className="ticket-row"><span className="k">Processing (goes to {LIVE.butcher.name}, est.)</span><span className="v">{money(est.processing)}</span></div>
             <div className="ticket-total">
-              <span>DUE AT PICKUP (EST.)</span>
+              <span>DUE AT PICKUP, TO {PAYABLE_TO.toUpperCase()} (EST.)</span>
               <span className="v">{money(est.balance)}</span>
             </div>
           </>
@@ -167,8 +167,8 @@ export default function CustomerTicket() {
       <p className="small mute" style={{ marginTop: "var(--space-md)" }}>
         Ranch questions: {RANCH_CONTACT.name}, {RANCH_CONTACT.phone}. Anything else: {SUPPORT.email}.{" "}
         {price === null
-          ? "The share of the steer is a fixed price. Processing is estimated on a typical carcass; the butcher bills it on the actual hanging weight."
-          : `Processing is figured at ${LIVE.butcher.name}'s posted rates on this steer's ${price.hangingLbs} lb hanging weight. The butcher's own invoice is final.`}
+          ? "The share of the steer is a fixed price. Processing is estimated on a typical carcass; the final figure uses the butcher's posted rates on the actual hanging weight. You pay Ranch Cuts for both."
+          : `Processing is figured at ${LIVE.butcher.name}'s posted rates on this steer's ${price.hangingLbs} lb hanging weight. You pay Ranch Cuts for both, and Ranch Cuts pays the ranch and the butcher.`}
       </p>
     </main>
   );

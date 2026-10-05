@@ -113,20 +113,23 @@ export function groundEstimate(a: CutSheetAnswers, share: ShareId): [number, num
 }
 
 /* ---------------- money ----------------
-   The share standard: two charges, two sellers.
+   The share standard: one payment to Ranch Cuts, itemized by where
+   the money goes.
    1. The live-animal share, a FIXED price, sold by the ranch (seller
-      of record). The deposit applies to this line.
-   2. Processing, billed by the butcher to each owner at its posted
-      rates on the steer's actual hanging weight. Before harvest it
-      is an estimate.
-   Ranch Cuts never takes title or holds funds.                    */
+      of record on the bill of sale). Goes to the ranch, less Ranch
+      Cuts' fee. The deposit applies to this line.
+   2. Processing at the butcher's posted rates on the steer's actual
+      hanging weight. Goes to the butcher. Before harvest it is an
+      estimate.
+   The family pays Ranch Cuts for both; Ranch Cuts pays out the
+   partners. Ranch Cuts never owns the cattle or the beef.         */
 
 export interface Cost {
   total: number;          // all-in estimate
-  animal: number;         // fixed, to the ranch
-  processing: number;     // estimate, to the butcher
-  deposit: number;        // to the ranch, applies to the animal share
-  animalBalance: number;  // animal - deposit, to the ranch at pickup
+  animal: number;         // fixed, goes to the ranch
+  processing: number;     // estimate, goes to the butcher
+  deposit: number;        // paid to Ranch Cuts, applies to the animal share
+  animalBalance: number;  // animal - deposit, due at pickup (goes to the ranch)
   balance: number;        // everything due at pickup: animal balance + processing
   hangingLbs: number;     // hanging-weight equivalent, typical
   takehomeLbs: number;
@@ -183,7 +186,7 @@ export interface FinalPrice {
   processingEstimate: number;
   total: number;
   deposit: number;
-  animalBalance: number;    // to the ranch at pickup
+  animalBalance: number;    // due at pickup, goes to the ranch
   balance: number;          // everything due at pickup
 }
 

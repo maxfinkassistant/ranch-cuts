@@ -1,10 +1,13 @@
 /**
  * Ranch Cuts: order backend (Google Apps Script web app)
  *
- * Ranch Cuts is the marketplace and booking platform: it never takes
- * title to an animal or holds funds. Each order is a share of one
- * ear-tagged live steer sold by the partner ranch (seller of record),
- * with processing billed separately by the partner butcher.
+ * Ranch Cuts is the marketplace and booking platform. Each order is a
+ * share of one ear-tagged live steer sold by the partner ranch (seller
+ * of record on the bill of sale), processed by the partner butcher at
+ * its posted rates. The family pays Ranch Cuts for everything (deposit,
+ * then the share balance plus processing at pickup); Ranch Cuts pays out
+ * the ranch (share price less its fee) and the butcher (processing).
+ * Ranch Cuts never owns the cattle or the beef.
  * Today there is one live partnership: Ranch Cuts Denver
  * (Thunderbolt Ranch + Colorado Custom Meat Co, Kersey CO).
  *
@@ -65,7 +68,8 @@ const PARTNERSHIP = {
   butcherAddress: "443 4th Street, Kersey CO 80644",
   butcherCity: "Kersey",
   butcherPhone: "970-356-2333",
-  /* the butcher's posted rates, billed by the butcher to each owner */
+  /* the butcher's posted rates; Ranch Cuts collects processing from each
+     owner and pays it out to the butcher */
   rates: { kill: 135, perLbHanging: 1.1, perQuarterSplit: 20 },
 };
 const SUPPORT_EMAIL = "hello@ranchcuts.com";
@@ -508,15 +512,17 @@ function money_(n) { return "$" + Math.round(Number(n || 0)).toLocaleString(); }
 function money2_(n) { return "$" + Number(n || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
 function replyTo_() { return props_().getProperty("REPLY_TO") || SUPPORT_EMAIL; }
 
-/* The two-line pricing block every email shares. */
+/* The pricing block every customer email shares: one payment to Ranch
+   Cuts, itemized by where the money goes. */
 function pricingLines_(cost) {
   return [
-    "Your share of the steer, sold by " + PARTNERSHIP.ranch + " (fixed): " + money_(cost.animal),
-    "Processing by " + PARTNERSHIP.butcher + ", billed by the butcher at its posted rates (estimate): " + money_(cost.processing),
+    "You pay Ranch Cuts for everything: one payee, one receipt. Here's where it goes.",
+    "Your share of the steer, goes to " + PARTNERSHIP.ranch + " (fixed): " + money_(cost.animal),
+    "Processing by " + PARTNERSHIP.butcher + " at its posted rates on actual hanging weight, goes to the butcher (estimate): " + money_(cost.processing),
     "All in (estimate): " + money_(cost.total),
-    "Deposit to " + PARTNERSHIP.ranch + ", applies to your share of the steer: " + money_(cost.deposit),
-    "Due at pickup: " + money_(cost.animalBalance) + " to " + PARTNERSHIP.sellerOfRecord
-      + ", plus processing (about " + money_(cost.processing) + ") to " + PARTNERSHIP.butcher + ".",
+    "Deposit, paid to Ranch Cuts, applies to your share of the steer: " + money_(cost.deposit),
+    "Due at pickup, paid to Ranch Cuts: about " + money_(cost.balance) + " (" + money_(cost.animalBalance)
+      + " for your share, plus processing, about " + money_(cost.processing) + ").",
   ];
 }
 
@@ -539,8 +545,9 @@ function notifyPartners_(o, summary, cost) {
     "Share: " + shareLabel_(o.share) + " (" + ownersLabel_(o.share) + ")",
     "Harvest: " + seasonLabel_(o.season) + (o.season !== CURRENT_SEASON ? "  (didn't fit in what's left of this season)" : ""),
     "",
-    "Animal share to " + PARTNERSHIP.sellerOfRecord + " (fixed): " + money_(cost.animal) + ". Deposit " + money_(cost.deposit) + ", balance " + money_(cost.animalBalance) + " at pickup.",
-    "Processing to " + PARTNERSHIP.butcher + " (estimate): " + money_(cost.processing) + ", billed by the butcher on actual hanging weight.",
+    "Animal share, sold by " + PARTNERSHIP.sellerOfRecord + " (fixed): " + money_(cost.animal) + ". Deposit " + money_(cost.deposit) + " now, balance " + money_(cost.animalBalance) + " at pickup.",
+    "Processing for " + PARTNERSHIP.butcher + " (estimate): " + money_(cost.processing) + ", at its posted rates on actual hanging weight.",
+    "Ranch Cuts collects from the family and pays you, no invoices to chase. The ranch's payout is the share price less the Ranch Cuts fee.",
     "",
     "Customer: " + o.name,
     "Email: " + o.email,
@@ -562,7 +569,7 @@ function confirmCustomer_(o, summary, cost, depositLink) {
   const subject = "Your " + PARTNERSHIP.listing + " beef is reserved, " + o.code;
   const payLine = depositLink
     ? "Pay your " + money_(cost.deposit) + " deposit here: " + depositLink
-    : PARTNERSHIP.ranchContact.name + " at " + PARTNERSHIP.ranch + " will reach out shortly to collect your " + money_(cost.deposit) + " deposit.";
+    : "Ranch Cuts will email you a payment link for your " + money_(cost.deposit) + " deposit shortly.";
   const season = seasonCopy_(o.season);
   const rolled = o.season !== CURRENT_SEASON;
   const share = shareLabel_(o.share).toLowerCase();
@@ -580,7 +587,7 @@ function confirmCustomer_(o, summary, cost, depositLink) {
     "",
     "WHAT YOU'LL PAY",
   ].concat(pricingLines_(cost), [
-    "Your share of the steer is a fixed price. Processing is billed by the butcher on your steer's actual hanging weight, so that line can move a little either way.",
+    "Your share of the steer is a fixed price. Processing is priced on your steer's actual hanging weight, so that line can move a little either way.",
     "",
     "WHAT HAPPENS NEXT",
     "Now: your deposit holds your share. You can adjust your cut sheet until your steer goes to the butcher.",
@@ -618,27 +625,27 @@ function invoiceCustomer_(o, steer, price) {
   const lines = [
     "Hi " + (o.name || "").split(" ")[0] + ",",
     "",
-    "Your " + share + " share is cut and weighed, so here's your final invoice. Two charges, two sellers.",
+    "Your " + share + " share is cut and weighed, so here's your final invoice. It's one payment to Ranch Cuts, and below is where every dollar goes.",
     "",
     "YOUR STEER",
     "Ear tag: " + (o.steer || "not assigned"),
     "Hanging weight: " + price.hangingLbs + " lb (your " + share + ": " + price.shareLbs + " lb)",
     "",
-    "1. YOUR SHARE OF THE STEER, sold by " + PARTNERSHIP.sellerOfRecord + " (fixed)",
+    "1. YOUR SHARE OF THE STEER, sold by " + PARTNERSHIP.sellerOfRecord + " (fixed, goes to the ranch)",
     price.discount > 0
       ? money_(price.animalList) + " less a " + money_(price.discount) + " discount = " + money_(price.animal)
       : money_(price.animal),
     "Deposit already paid: " + money_(price.deposit),
-    "Due to " + PARTNERSHIP.sellerOfRecord + " at pickup: " + money_(price.animalBalance),
+    "Share balance at pickup: " + money_(price.animalBalance),
     "",
-    "2. PROCESSING by " + PARTNERSHIP.butcher + ", billed by the butcher at its posted rates",
+    "2. PROCESSING by " + PARTNERSHIP.butcher + " at its posted rates (goes to the butcher)",
   ];
   price.processingLines.forEach(function (l) { lines.push(l[0] + ": " + money2_(l[1])); });
   lines.push(
     "Processing total: " + money2_(price.processing),
     "",
     "ALL IN: " + money2_(price.total),
-    "DUE AT PICKUP: " + money2_(price.balance) + " (" + money_(price.animalBalance) + " to the ranch, " + money2_(price.processing) + " to the butcher)",
+    "DUE AT PICKUP, PAID TO RANCH CUTS: " + money2_(price.balance) + " (" + money_(price.animalBalance) + " share balance for the ranch, " + money2_(price.processing) + " processing for the butcher)",
     "",
   );
 
@@ -648,7 +655,7 @@ function invoiceCustomer_(o, steer, price) {
     readyLine,
     "Everything comes out frozen, vacuum sealed, labeled Not For Sale and boxed, so leave room in the vehicle.",
     STORAGE_NOTE,
-    "The butcher's own invoice is final for processing.",
+    "You pay Ranch Cuts, and Ranch Cuts pays the ranch and the butcher.",
     "",
     "Questions about your steer? Call or text " + PARTNERSHIP.ranchContact.name + " at " + PARTNERSHIP.ranch + ", " + PARTNERSHIP.ranchContact.phone + ".",
     "Anything else, just reply here or write " + SUPPORT_EMAIL + ".",

@@ -40,8 +40,8 @@ function exportCsv(orders: Order[], steers: Steer[]) {
   const head = [
     "code", "partnership", "status", "name", "email", "phone", "address", "share", "harvest",
     "steer", "steer_hanging_lbs", "est_ready", "est_takehome_lbs",
-    "animal_to_ranch", "animal_discount", "processing_to_butcher", "processing_is",
-    "total", "deposit_to_ranch", "animal_balance_to_ranch", "due_at_pickup", "created",
+    "animal_payout_to_ranch_before_fee", "animal_discount", "processing_payout_to_butcher", "processing_is",
+    "total_paid_to_ranch_cuts", "deposit_paid", "animal_balance", "due_at_pickup", "created",
   ];
   const rows = orders.map((o) => {
     const steer = steers.find((s) => s.id === o.steer);
@@ -298,15 +298,16 @@ export default function Customers() {
     commit(() => saveSettings(next), () => pushSettings(adminKey, next), (o) => ({ ...o, settings: next }));
 
   /* The final invoice goes out from here, not automatically: the ranch
-     decides when a steer's numbers are settled enough to bill on. */
+     decides when a steer's numbers are settled enough to bill on. The
+     invoice itself is one bill from Ranch Cuts. */
   const emailInvoice = async (o: Order) => {
     const steer = steers.find((x) => x.id === o.steer);
     const price = finalPrice(o.share, steer);
     if (!price) return;
     const ask =
-      `Email ${o.name} their final invoice? Due at pickup: ${money(price.animalBalance)} to ${LIVE.ranch.name}`
+      `Email ${o.name} their final invoice? Due at pickup to Ranch Cuts: ${money2(price.balance)}, which is ${money(price.animalBalance)} share balance for ${LIVE.ranch.name}`
       + (price.discount > 0 ? ` (after a ${money(price.discount)} discount)` : "")
-      + ` plus ${money2(price.processing)} processing to ${LIVE.butcher.name}.`;
+      + ` plus ${money2(price.processing)} processing for ${LIVE.butcher.name}.`;
     if (!window.confirm(ask)) return;
     setInvoiceBusy(o.code);
     setLoadError(null);
@@ -372,8 +373,10 @@ export default function Customers() {
     }, {}),
   ).sort((a, b) => a.name.localeCompare(b.name));
 
-  /* the two sellers, kept apart: animal shares are the ranch's sales,
-     processing is the butcher's (estimate until each steer is weighed) */
+  /* the two payouts, kept apart: families pay Ranch Cuts for everything,
+     and Ranch Cuts owes the ranch its animal shares (less the Ranch Cuts
+     fee) and the butcher its processing (estimate until each steer is
+     weighed) */
   const totals = orders.reduce(
     (t, o) => {
       const p = finalPrice(o.share, steers.find((x) => x.id === o.steer));
@@ -397,8 +400,8 @@ export default function Customers() {
           <h2 className="d" style={{ fontSize: "2rem" }}>Ranch office: {LISTING_NAME}</h2>
           <p className="small mute" style={{ marginTop: 4 }}>
             {orders.length} orders, ~{totals.hanging.toLocaleString()} lb hanging equivalent committed.
-            {" "}{money(totals.animal)} in animal shares to {LIVE.ranch.name} ({money(totals.deposits)} in deposits),
-            {" "}about {money(totals.processing)} in processing to {LIVE.butcher.short}.
+            {" "}Payouts owed: {money(totals.animal)} in animal shares to {LIVE.ranch.name} before the Ranch Cuts fee,
+            {" "}about {money(totals.processing)} in processing to {LIVE.butcher.short}. {money(totals.deposits)} in deposits collected.
             {live && !remote && !loadError && " Loading from the order sheet…"}
             {!live && " Local demo mode."}
           </p>
@@ -527,8 +530,8 @@ export default function Customers() {
             ready to email to {PROCESSOR.cutSheetEmail}. Status changes update the customer's tracking
             page immediately. Link an order to a steer and, once that steer's hanging weight is in, the
             processing line switches from the estimate to the butcher's posted rates on the real weight.
-            The animal share stays fixed. "Email invoice" sends the customer both lines, including any
-            discount you set on the steer.
+            The animal share stays fixed. "Email invoice" sends the customer one bill from Ranch Cuts with
+            both lines, including any discount you set on the steer.
           </p>
         </div>
       )}
@@ -591,7 +594,7 @@ export default function Customers() {
             Enter each steer as you know it: the ear tag first, hanging weight and ready date when you
             have them. Link orders to a steer from the Harvest roster tab. A discount is optional and
             only lowers the animal share (dollars off a whole steer, split by share); processing is
-            always the butcher's to bill.
+            always at the butcher's posted rates.
           </p>
         </div>
       )}

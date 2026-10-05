@@ -13,8 +13,8 @@ export interface OrderPayload {
   order: Order;
   partnership: string;    // Partnership.slug, also on order.partnership
   summary: { name: string; detail: string }[];
-  /** Two charges, two sellers: animal (fixed, to the ranch) and
-      processing (estimate, billed by the butcher). The backend
+  /** One payment to Ranch Cuts, itemized: animal (fixed, goes to the
+      ranch) and processing (estimate, goes to the butcher). The backend
       recomputes these from the share; they ride along for the record. */
   cost: { total: number; animal: number; processing: number; deposit: number; animalBalance: number; balance: number };
   depositLink: string;
