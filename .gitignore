@@ -5,3 +5,4 @@ dist/
 data-src/
 tsconfig.tsbuildinfo
 demo-build/
+demo/

@@ -17,7 +17,13 @@ Business context, pricing, the share standard and the brand live in `~/Documents
 bun install
 bun run dev        # http://localhost:5177
 bun run build      # dist/, plus dist/404.html for static hosts
+bun run demo       # demo/RanchCuts-Website-Demo.html, one self-contained file
 ```
+
+**The demo file** opens by double-click, no server needed. Everything is inlined (JS, CSS, logos, the steer photo,
+the cut-sheet PDF and all 40,979 zip codes, ~3.3 MB). It uses hash URLs (`#/find/80202`). Orders and waitlist
+sign-ups stay in that browser (demo mode). Only Google Fonts and the Unsplash cut photos come from the web, so
+offline it falls back to Georgia and shows blank cut tiles.
 
 ## Pages
 

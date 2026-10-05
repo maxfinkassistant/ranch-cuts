@@ -51,7 +51,7 @@ const routes = [
 
 // Hash routing when opened as a file or when VITE_HASH_ROUTER is set
 // (static hosts without an SPA fallback); clean URLs otherwise.
-const useHash = window.location.protocol === "file:" || import.meta.env.VITE_HASH_ROUTER === "1";
+const useHash = window.location.protocol === "file:" || import.meta.env.VITE_HASH_ROUTER === "1" || !!import.meta.env.VITE_DEMO;
 const router = useHash ? createHashRouter(routes) : createBrowserRouter(routes);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

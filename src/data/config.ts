@@ -16,6 +16,7 @@
    ============================================================ */
 
 import { LIVE } from "./partnerships";
+import DEMO_ASSETS from "virtual:demo-assets";
 
 export type ShareId = "quarter" | "half" | "whole";
 
@@ -582,8 +583,11 @@ export const CUT_MEDIA: Record<string, CutMedia> = {
 export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? "";
 export const STRIPE_PAYMENT_LINK = import.meta.env.VITE_STRIPE_PAYMENT_LINK ?? "";
 
-/** Base path for static assets (GitHub Pages serves under /repo/). */
-export const ASSET = (p: string) => `${import.meta.env.BASE_URL}${p.replace(/^\//, "")}`;
+/** Base path for static assets. The single-file demo inlines them as data URIs. */
+export const ASSET = (p: string) => {
+  const key = p.replace(/^\//, "");
+  return DEMO_ASSETS[key] ?? `${import.meta.env.BASE_URL}${key}`;
+};
 
 export const money = (n: number) =>
   "$" + n.toLocaleString(undefined, { maximumFractionDigits: 0 });
