@@ -23,6 +23,15 @@ Nothing here is deployed yet. What it takes:
 5. **Email addresses.** The site shows `hello@ranchcuts.com` and `partners@ranchcuts.com` (`SUPPORT` in
    `src/data/config.ts`). Create them or change them.
 
+6. **Partner CRM.** The same Apps Script serves `/crm` from a "CRM" sheet in the order book. Add `CRM_KEY` to
+   Script Properties for a CRM passcode separate from the ranch office (without it, `ADMIN_KEY` opens both). To
+   carry over work done locally, open `crm/crm.json` and post each doc to the deployed script (`crm-put`), or keep
+   using the local file until the backend is live. The research seed (`src/data/crm-seed.json`) is git-ignored, so
+   the Pages build from GitHub ships `/crm` with no prospect list. Never build and upload the site from a machine
+   that has the seed: it would be bundled into the public `/crm` chunk. To use the research in production, serve
+   the seed from the Apps Script behind the key, or deploy the CRM as a separate private build. The single-file
+   demo already leaves `/crm` out.
+
 ## Before launch, check
 
 - Counsel sign-off on the share standard, the disclosures in the order flow and the "Not For Sale" language.

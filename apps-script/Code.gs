@@ -31,6 +31,13 @@
  *                                  how many were reserved outside Ranch Cuts.
  *   POST {action:"invoice", key, code}  emails one customer the final invoice.
  *
+ *   Partner CRM (/crm on the site; CRM_KEY, or ADMIN_KEY when CRM_KEY is unset):
+ *   GET  ?action=crm&key=...        every CRM doc (stages, notes, pairs, calls).
+ *   POST {action:"crm-put", key, doc:{kind,id,data,updatedAt,by}}  adds or replaces one doc.
+ *   POST {action:"crm-del", key, kind, id}                          removes one doc.
+ *   Docs live on the "CRM" sheet: one row each, the record as JSON in the last
+ *   column, with name/stage/next follow-up copied out so the sheet reads on its own.
+ *
  * Setup (once, about 3 minutes), from the Ranch Cuts Google account:
  *   1. script.google.com > New project > paste this file > save.
  *   2. Project Settings > Script Properties > add:
@@ -39,6 +46,8 @@
  *                         (Ranch Cuts ops + the ranch)
  *        REPLY_TO       = (optional) where customer replies go; default hello@ranchcuts.com
  *        SHEET_ID       = (optional) an existing spreadsheet id; leave blank to auto-create
+ *        CRM_KEY        = (optional) a separate passcode for the partner CRM;
+ *                         without it the CRM uses ADMIN_KEY
  *   3. Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone
  *   4. Copy the /exec URL into VITE_BACKEND_URL in the site config.
  *
@@ -263,6 +272,10 @@ function doGet_(e) {
       settings: settings_(),
     });
   }
+  if (q.action === "crm") {
+    if (!isCrm_(q.key)) return json_({ ok: false, error: "bad key" });
+    return json_({ ok: true, docs: crmDocs_() });
+  }
   if (q.action === "availability") {
     const a = availability_();
     return json_({ ok: true, season: a.season, capacity: a.capacity, reserved: a.reserved });
@@ -283,6 +296,11 @@ function doPost_(e) {
   if (["status", "assign", "steer", "steer-delete", "settings", "invoice"].indexOf(body.action) >= 0) {
     if (!isAdmin_(body.key)) return json_({ ok: false, error: "bad key" });
     return adminPost_(body);
+  }
+
+  if (body.action === "crm-put" || body.action === "crm-del") {
+    if (!isCrm_(body.key)) return json_({ ok: false, error: "bad key" });
+    return crmPost_(body);
   }
 
   if (body.action === "waitlist") return waitlist_(body);
@@ -319,6 +337,73 @@ function doPost_(e) {
   }
 
   return json_({ ok: false, error: "unknown action" });
+}
+
+/* ---------------- partner CRM ---------------- */
+
+const CRM_SHEET = "CRM";
+const CRM_HEADERS = ["Kind", "ID", "Name", "Stage", "Owner", "Next step", "Next date", "Updated", "By", "JSON"];
+const CRM_KINDS = ["rancher", "butcher", "pair", "activity"];
+
+function isCrm_(key) {
+  const want = String(props_().getProperty("CRM_KEY") || props_().getProperty("ADMIN_KEY") || "").trim();
+  return !!want && String(key || "").trim() === want;
+}
+
+function crmSheet_() {
+  const ss = book_();
+  let sh = ss.getSheetByName(CRM_SHEET);
+  if (!sh) {
+    sh = ss.insertSheet(CRM_SHEET);
+    sh.appendRow(CRM_HEADERS);
+    sh.setFrozenRows(1);
+    sh.getRange(1, 1, 1, CRM_HEADERS.length).setFontWeight("bold");
+    sh.getRange("A:I").setNumberFormat("@");
+  }
+  return sh;
+}
+
+function crmRows_() {
+  const sh = crmSheet_();
+  const last = sh.getLastRow();
+  return last < 2 ? [] : sh.getRange(2, 1, last - 1, CRM_HEADERS.length).getValues();
+}
+
+function crmDocs_() {
+  return crmRows_().map(r => {
+    try {
+      return { kind: String(r[0]), id: String(r[1]), data: JSON.parse(r[9]), updatedAt: String(r[7]), by: String(r[8] || "") };
+    } catch (e) {
+      return null;
+    }
+  }).filter(Boolean);
+}
+
+function crmPost_(body) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    const sh = crmSheet_();
+    if (body.action === "crm-del") {
+      const i = crmRows_().findIndex(r => String(r[0]) === String(body.kind) && String(r[1]) === String(body.id));
+      if (i >= 0) sh.deleteRow(i + 2);
+      return json_({ ok: true });
+    }
+    const d = body.doc || {};
+    if (CRM_KINDS.indexOf(d.kind) < 0 || !d.id || typeof d.data !== "object") return json_({ ok: false, error: "bad doc" });
+    const text = JSON.stringify(d.data);
+    if (text.length > 45000) return json_({ ok: false, error: "record too large" });   // a sheet cell holds 50,000 characters
+    const x = d.data;
+    const name = d.kind === "activity" ? String(x.kind || "") + ": " + String(x.summary || "").slice(0, 80) : String(x.name || x.rancherId || "");
+    const row = [d.kind, String(d.id), name, String(x.stage || ""), String(x.owner || x.by || ""), String(x.nextStep || ""),
+      String(x.nextDate || ""), String(d.updatedAt || new Date().toISOString()), String(d.by || ""), text];
+    const i = crmRows_().findIndex(r => String(r[0]) === d.kind && String(r[1]) === String(d.id));
+    if (i >= 0) sh.getRange(i + 2, 1, 1, row.length).setValues([row]);
+    else sh.appendRow(row);
+    return json_({ ok: true });
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 /* ---------------- waitlist ---------------- */

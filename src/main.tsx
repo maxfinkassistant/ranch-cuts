@@ -16,6 +16,8 @@ const Order = lazy(() => import("./pages/Order"));
 const Track = lazy(() => import("./pages/Track"));
 const Customers = lazy(() => import("./pages/Customers"));
 const CustomerTicket = lazy(() => import("./pages/CustomerTicket"));
+/* the partner CRM carries the prospect research: never in the shareable demo file */
+const Crm = import.meta.env.VITE_DEMO ? null : lazy(() => import("./pages/crm/Crm"));
 
 const wait = <main className="page section wide mute">Loading...</main>;
 const L = (el: React.ReactNode) => <Suspense fallback={wait}>{el}</Suspense>;
@@ -45,6 +47,7 @@ const routes = [
       { path: "/track/:code", element: L(<Track />) },
       { path: "/customers", element: L(<Customers />) },
       { path: "/customers/ticket/:code", element: L(<CustomerTicket />) },
+      ...(Crm ? [{ path: "/crm", element: L(<Crm />) }] : []),
     ],
   },
 ];

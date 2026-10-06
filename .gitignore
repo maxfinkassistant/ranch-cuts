@@ -6,3 +6,6 @@ data-src/
 tsconfig.tsbuildinfo
 demo-build/
 demo/
+/crm/
+# prospect research for /crm: never commit (public repo, main deploys to Pages)
+src/data/crm-seed.json

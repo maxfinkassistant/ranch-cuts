@@ -1,7 +1,7 @@
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import { viteSingleFile } from "vite-plugin-singlefile";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync, existsSync, mkdirSync, writeFileSync, renameSync } from "node:fs";
 import { join, extname, relative } from "node:path";
 
 /* Two builds:
@@ -54,11 +54,58 @@ function demoAssets(demo: boolean): Plugin {
   };
 }
 
+/** Dev-only CRM store: GET /__crm returns every saved doc, POST /__crm {op:"put",doc} or
+    {op:"del",kind,id} changes one. Data lives in crm/crm.json (git-ignored), written atomically.
+    Production uses the Apps Script "CRM" sheet instead (src/lib/crm.ts picks the store). */
+function crmFileStore(): Plugin {
+  const dir = new URL("./crm", import.meta.url).pathname;
+  const file = join(dir, "crm.json");
+  type Doc = { kind: string; id: string; data: unknown; updatedAt: string; by?: string };
+  const read = (): Doc[] => (existsSync(file) ? JSON.parse(readFileSync(file, "utf8")).docs : []);
+  const write = (docs: Doc[]) => {
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(file + ".tmp", JSON.stringify({ updatedAt: new Date().toISOString(), docs }, null, 1));
+    renameSync(file + ".tmp", file);
+  };
+  return {
+    name: "ranch-cuts-crm-file-store",
+    apply: "serve",
+    configureServer(server) {
+      server.middlewares.use("/__crm", (req, res) => {
+        const send = (code: number, body: unknown) => {
+          res.statusCode = code;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify(body));
+        };
+        if (req.method === "GET") return send(200, { ok: true, docs: read() });
+        if (req.method !== "POST") return send(405, { ok: false, error: "GET or POST" });
+        let raw = "";
+        req.on("data", (c) => (raw += c));
+        req.on("end", () => {
+          try {
+            const body = JSON.parse(raw);
+            const docs = read();
+            if (body.op === "put" && body.doc?.kind && body.doc?.id) {
+              const rest = docs.filter((d) => !(d.kind === body.doc.kind && d.id === body.doc.id));
+              write([...rest, body.doc]);
+            } else if (body.op === "del" && body.kind && body.id) {
+              write(docs.filter((d) => !(d.kind === body.kind && d.id === body.id)));
+            } else return send(400, { ok: false, error: "bad request" });
+            send(200, { ok: true });
+          } catch (e) {
+            send(500, { ok: false, error: (e as Error).message });
+          }
+        });
+      });
+    },
+  };
+}
+
 export default defineConfig(({ command, mode }) => {
   const demo = mode === "demo";
   return {
     base: demo ? "./" : command === "build" ? (process.env.VITE_BASE ?? "/") : "/",
-    plugins: demo ? [react(), demoAssets(true), viteSingleFile()] : [react(), demoAssets(false)],
+    plugins: demo ? [react(), demoAssets(true), viteSingleFile()] : [react(), demoAssets(false), crmFileStore()],
     define: { "import.meta.env.VITE_DEMO": JSON.stringify(demo ? "1" : "") },
     build: demo ? { outDir: "demo-build", emptyOutDir: true, copyPublicDir: false, chunkSizeWarningLimit: 6000 } : undefined,
     server: { port: 5177 },

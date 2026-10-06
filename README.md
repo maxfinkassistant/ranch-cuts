@@ -38,6 +38,7 @@ offline it falls back to Georgia and shows blank cut tiles.
 | `/order` | Share pick, 13-question cut-sheet wizard, review with the two-line price split and required disclosures, $250 deposit, confirmation with the filled CCMC PDF |
 | `/track/:code` | Order status and itemized balance (sample: `RC-SAMPLE1`) |
 | `/customers` | Ranch office for Ranch Cuts Denver (demo passcode `KERSEY`) |
+| `/crm` | Partner CRM, Ranch Cuts staff only (demo passcode `PARTNERS`; not in the demo file). See below |
 
 ## Data
 
@@ -51,6 +52,36 @@ offline it falls back to Georgia and shows blank cut tiles.
 - `public/zip/<prefix>.json`: 40,979 zip centroids split by first three digits (GeoNames, CC BY 4.0).
   `src/data/usStates.ts`: state outlines (us-atlas). Rebuild both with `bun run data` after downloading the
   sources into `data-src/` (URLs in the scripts).
+
+## Partner CRM (`/crm`)
+
+Where Ranch Cuts signs ranches and butchers. Not linked from the site.
+
+- **Call lists** (home tab): pick Ranchers or Butchers, pick a tier, call top to bottom. Follow-ups that are due
+  float to the top and also collect in *Due now*.
+  - Ranchers: **T1 ready-made pairs** (already use or own a butcher on our list), **T2 strong finishers** (fit A),
+    **T3 worth a call** (fit B), **T4 research first** (fit C or no phone/email).
+  - Butchers: **T1 paired**, **T2 launch metros**, **T3 other metros**, **T4 skip** (disqualified in research).
+  - Any record's tier can be overridden in its drawer.
+- **Record drawer**: phone/email/site, stage, owner, tier, interest, a one-tap call logger (talked / no answer /
+  voicemail / email / text / visit / note, next step, follow-up date). Logging bumps attempts and last contact and
+  moves the stage forward. Also: *Confirm on the call* fields (rancher: finishes on own place, head a year, who kills
+  for them, price OK; butcher: takes shares, slots a week, confirmed rates, lead time), notes, **Call prep** (Tier 1
+  briefs: owners, background, how they sell, reputation, openers, cautions, sources), **Connections** (our live
+  partners nearby, ranches on our list within 40 mi, ranches sharing a butcher, each with its stage), pairs,
+  history and the original research.
+- **Ranchers / Butchers**: sortable tables, stage and finishing filters, CSV export, *Add a ranch / butcher*.
+- **Pairs**: the ranch + butcher pipeline (Proposed → Both talked → Visit 1 → Visit 2 → Visit 3: signing → Signed →
+  Live). The 18 ranches already using a Tier 1 butcher start as proposed pairs; Thunderbolt × CCMC is Live.
+- **Metros**: per launch metro, ranchers and butchers within 90 mi contacted / warm, the furthest pair, and gaps.
+
+**Data.** Research lives in `src/data/crm-seed.json`, built by `python3 scripts/build-crm-seed.py` from
+`~/Documents/RanchCuts/call-list` (rancher prospects, the Tier 1 butcher list, Tier 1 briefs). The seed is git-ignored
+because this repo is public and `main` deploys to Pages: run the script once after cloning. Without it the CRM builds
+and runs with no research records. The store holds only
+what the team enters (stages, notes, confirmed numbers, pairs, calls, added records), so rebuilding the seed never
+loses work. Store by environment: Apps Script "CRM" sheet when `VITE_BACKEND_URL` is set; `crm/crm.json` on
+`bun run dev` (git-ignored; a Vite middleware at `/__crm`); this browser's localStorage otherwise.
 
 ## Backend
 
