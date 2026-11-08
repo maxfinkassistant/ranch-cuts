@@ -25,11 +25,11 @@ jobs:
         env:
           VITE_BACKEND_URL: ${{ vars.VITE_BACKEND_URL }}
           VITE_STRIPE_PAYMENT_LINK: ${{ vars.VITE_STRIPE_PAYMENT_LINK }}
-          # Preview launch on the project path: no orders or sign-ups, hash URLs.
-          # Once ranchcuts.com points here: VITE_BASE=/ and drop VITE_HASH_ROUTER.
+          # Served at ranchcuts.com (public/CNAME) from the root path with clean URLs.
+          # Preview mode stays on (no orders or sign-ups) until the launch gates clear;
+          # set the VITE_PREVIEW repository variable to 0 to switch it off.
           VITE_PREVIEW: ${{ vars.VITE_PREVIEW || '1' }}
-          VITE_BASE: ${{ vars.VITE_BASE || '/ranch-cuts/' }}
-          VITE_HASH_ROUTER: ${{ vars.VITE_HASH_ROUTER || '1' }}
+          VITE_BASE: ${{ vars.VITE_BASE || '/' }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
