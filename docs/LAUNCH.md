@@ -1,6 +1,12 @@
 # Going live
 
-Nothing here is deployed yet. What it takes:
+**Status (2026-11-07):** the site is live at https://ranchcuts.com in preview mode (no orders or sign-ups). DNS is at
+Squarespace (four apex A records to GitHub Pages, `www` CNAME to `maxfinkassistant.github.io`); the Pages custom domain
+is set with HTTPS enforced; `public/CNAME` and the root `VITE_BASE` ship in the workflow. The Squarespace Email Security
+preset publishes `v=spf1 -all`, so replace it before any @ranchcuts.com mailbox sends mail. Everything below from the
+backend on is still open; set the `VITE_PREVIEW` repository variable to `0` to start taking orders once it is.
+
+What it takes:
 
 1. **Accounts (Max).** A Ranch Cuts Google account for the Apps Script backend and the order sheet; a GitHub
    repo (or Vercel/Netlify project); the ranchcuts.com DNS.
