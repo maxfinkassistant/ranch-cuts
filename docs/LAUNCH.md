@@ -1,10 +1,34 @@
 # Going live
 
-**Status (2026-11-07):** the site is live at https://ranchcuts.com in preview mode (no orders or sign-ups). DNS is at
+**Status (2026-11-09):** the site is live at https://ranchcuts.com in preview mode (no orders). Sign-ups are on:
+`VITE_SIGNUP_URL` was set on 2026-11-09 and rows land on the "Ranch Cuts Sign-ups" Google Sheet (next section). DNS is at
 Squarespace (four apex A records to GitHub Pages, `www` CNAME to `maxfinkassistant.github.io`); the Pages custom domain
 is set with HTTPS enforced; `public/CNAME` and the root `VITE_BASE` ship in the workflow. The Squarespace Email Security
 preset publishes `v=spf1 -all`, so replace it before any @ranchcuts.com mailbox sends mail. Everything below from the
 backend on is still open; set the `VITE_PREVIEW` repository variable to `0` to start taking orders once it is.
+
+## Sign-ups (ahead of orders)
+
+Sign-ups ("tell me when a ranch and butcher open near me") no longer wait for the order backend. They open as soon
+as `VITE_SIGNUP_URL` is set, while preview mode keeps ordering off. Until it is set, every sign-up form on the live
+site shows "sign-ups open when Ranch Cuts launches" and collects nothing. Step 1 was done on 2026-11-09; the steps stay
+here for a rebuild or a move to another account.
+
+1. **The sheet.** Follow the steps at the top of `apps-script/Signups.gs`: a Google Sheet, the script pasted into
+   Extensions > Apps Script, deployed as a web app (execute as you, access: anyone). Put the `/exec` URL in the
+   `VITE_SIGNUP_URL` repository variable and re-run the deploy workflow. Each sign-up is a row: email, zip, town,
+   state, nearest metro, which form, and the ad it came from (utm tags).
+2. **The page.** `/signup` is the landing page for ads; `/signup/<metro>` is the same page for one planned metro
+   (and `/signup/denver` for the Front Range). The build writes real HTML files for these, so they answer 200 with
+   their own link preview. Prompts to sign up sit on the home page, how it works, the map, about, the Denver page,
+   the planned-metro pages, the order preview, the banner, the nav and the footer (`SignupBand`, `SignupForm`).
+3. **Pixels (optional).** `VITE_META_PIXEL_ID` and `VITE_TIKTOK_PIXEL_ID` repository variables turn on the Meta and
+   TikTok pixels: a page view per route and a lead per sign-up. No email or zip is sent to them.
+4. **Privacy.** `/privacy` says what is collected and promises removal by email to `hello@ranchcuts.com`, so that
+   mailbox has to exist before ads run. Counsel has not reviewed the page.
+5. **The ads.** Stills, videos, copy and links: `~/Documents/RanchCuts/marketing/signup-campaign/LAUNCH-KIT.md`.
+
+## Orders
 
 What it takes:
 

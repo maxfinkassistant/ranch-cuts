@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import UsMap, { type MapMarker } from "../components/UsMap";
 import ZipSearch from "../components/ZipSearch";
 import WaitlistForm from "../components/WaitlistForm";
+import SignupBand from "../components/SignupBand";
 import { PARTNERSHIPS, PLANNED, lookupZip, coverageFor, type ZipPlace, type Coverage } from "../data/partnerships";
 import { SHARES, SEASONS, CURRENT_SEASON, money } from "../data/config";
 
@@ -145,7 +146,7 @@ export default function MapPage() {
                   ranch or butcher is signed yet. {planned.states.length > 1 ? `Because the metro crosses a state line, it will get a ranch and butcher on each side (${planned.states.join(" and ")}).` : ""}
                 </p>
                 <WaitlistForm zip={you?.place.zip ?? ""} place={you?.place.place} state={you?.place.state ?? planned.states[0]} nearest={planned.slug}
-                  cta={`Bring it to ${planned.city}`} />
+                  cta={`Bring it to ${planned.city}`} source="map-planned" />
               </div>
             )}
 
@@ -166,6 +167,15 @@ export default function MapPage() {
           </aside>
         </div>
       </section>
+
+      <section className="page section">
+        <div className="wide">
+          <SignupBand source="map" title="Don't see your city on the map?">
+            The planned list isn't final and its order isn't set. Sign-ups set it. Tell us where you live: enough zip codes from one
+            place puts it on the map, and you get one email the day it opens.
+          </SignupBand>
+        </div>
+      </section>
     </main>
   );
 }
@@ -179,7 +189,7 @@ function YouNote({ place, cov }: { place: ZipPlace; cov: Coverage }) {
   return (
     <div className="you-note">
       <p><b>{where}</b> doesn't have a partnership yet. Join the list and your zip code counts toward opening one.</p>
-      <WaitlistForm zip={place.zip} place={place.place} state={place.state} nearest={cov.nearestPlanned?.metro.slug} />
+      <WaitlistForm zip={place.zip} place={place.place} state={place.state} nearest={cov.nearestPlanned?.metro.slug} source="map-zip" />
     </div>
   );
 }

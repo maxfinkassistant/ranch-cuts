@@ -13,6 +13,7 @@ import {
 } from "../data/config";
 import { LIVE } from "../data/partnerships";
 import SteerMap from "../components/SteerMap";
+import SignupForm from "../components/SignupForm";
 import SteerTracker from "../components/SteerTracker";
 import { defaultCutSheet, createOrder, updateOrder, type Order as OrderRow, type CutSheetAnswers } from "../lib/store";
 import { useAvailability, refreshAvailability, seasonFor, seasonFull, steersLeft, steerCount } from "../lib/availability";
@@ -57,6 +58,13 @@ function PreviewOrder() {
         <div className="hero-actions">
           <a href={THUNDERBOLT_STORE} className="btn btn-accent btn-big" target="_blank" rel="noreferrer">Order at thunderboltbeef.com</a>
           <Link to={`/local/${LIVE.slug}`} className="btn btn-ghost btn-big">Meet the Denver partnership</Link>
+        </div>
+        <div style={{ marginTop: "var(--space-2xl)" }}>
+          <span className="tag">Rather wait for Ranch Cuts?</span>
+          <p style={{ marginTop: "var(--space-xs)", color: "var(--ink-2)" }}>
+            Leave your zip code and email and we'll tell you the day reservations open near you.
+          </p>
+          <SignupForm source="order-preview" id="order-signup" />
         </div>
       </div>
     </main>

@@ -152,6 +152,20 @@ export const SUPPORT = { email: "hello@ranchcuts.com", partnersEmail: "partners@
 export const PREVIEW = import.meta.env.VITE_PREVIEW === "1";
 export const THUNDERBOLT_STORE = "https://thunderboltbeef.com";
 
+/* Sign-ups ("tell me when a ranch and butcher open near me") run ahead of orders. They
+   open as soon as a sign-up endpoint is set: VITE_SIGNUP_URL (the small standalone script
+   in apps-script/Signups.gs) or the full backend. Preview keeps ordering off either way.
+   Outside preview with no endpoint, sign-ups stay in this browser (local demo). */
+export const SIGNUP_URL = import.meta.env.VITE_SIGNUP_URL || import.meta.env.VITE_BACKEND_URL || "";
+export const SIGNUPS_OPEN = SIGNUP_URL.length > 0 || !PREVIEW;
+
+/* Ad pixels, loaded only when an id is set (src/lib/pixels.ts). They let Meta and
+   TikTok count sign-ups, so ads can be bought per sign-up instead of per click. */
+export const META_PIXEL_ID = import.meta.env.VITE_META_PIXEL_ID ?? "";
+export const TIKTOK_PIXEL_ID = import.meta.env.VITE_TIKTOK_PIXEL_ID ?? "";
+
+export const SITE_URL = "https://ranchcuts.com";
+
 /* ---------------- brand copy (substantiated only) ----------------
    Approved claims: Colorado cattle / ranch / butcher; Angus;
    pasture-raised in Colorado; grain-finished; ownership from

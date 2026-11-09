@@ -25,8 +25,13 @@ jobs:
         env:
           VITE_BACKEND_URL: ${{ vars.VITE_BACKEND_URL }}
           VITE_STRIPE_PAYMENT_LINK: ${{ vars.VITE_STRIPE_PAYMENT_LINK }}
+          # Sign-ups run ahead of orders: they open as soon as VITE_SIGNUP_URL is set
+          # (apps-script/Signups.gs web app), even while preview mode keeps ordering off.
+          VITE_SIGNUP_URL: ${{ vars.VITE_SIGNUP_URL }}
+          VITE_META_PIXEL_ID: ${{ vars.VITE_META_PIXEL_ID }}
+          VITE_TIKTOK_PIXEL_ID: ${{ vars.VITE_TIKTOK_PIXEL_ID }}
           # Served at ranchcuts.com (public/CNAME) from the root path with clean URLs.
-          # Preview mode stays on (no orders or sign-ups) until the launch gates clear;
+          # Preview mode stays on (no orders) until the launch gates clear;
           # set the VITE_PREVIEW repository variable to 0 to switch it off.
           VITE_PREVIEW: ${{ vars.VITE_PREVIEW || '1' }}
           VITE_BASE: ${{ vars.VITE_BASE || '/' }}

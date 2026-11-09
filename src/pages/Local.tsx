@@ -3,7 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import ZipSearch from "../components/ZipSearch";
 import ColoradoMap from "../components/ColoradoMap";
 import SteerTracker from "../components/SteerTracker";
-import WaitlistForm from "../components/WaitlistForm";
+import SignupForm from "../components/SignupForm";
 import { PLANNED, partnershipBySlug, PARTNERSHIPS, lookupZip, coverageFor, type ZipPlace, type Coverage } from "../data/partnerships";
 import "../styles/local.css";
 import {
@@ -266,6 +266,12 @@ export default function Local() {
           <Link to="/order" className="btn btn-accent btn-big">Reserve a share in {p.city}</Link>
           <Link to="/how-it-works" className="btn btn-ghost btn-big">How it works</Link>
         </div>
+        <div className="wide">
+          <div className="notify-strip">
+            <p><b>Not in {p.stateName}?</b> Shares stay in one state, so Ranch Cuts {p.city} can't serve you. We'll tell you when a ranch and a butcher open near you.</p>
+            <Link to="/signup" className="btn btn-solid">Get notified</Link>
+          </div>
+        </div>
       </section>
 
       <section className="photo-band" style={{ backgroundImage: `url(${IMAGES.heroPlains})` }}>
@@ -330,7 +336,7 @@ function PlannedPage({ slug }: { slug: string }) {
               {m.city} is on our list: {m.butchersNearby} butchers that process beef are within about an hour.
               We haven't signed a ranch or a butcher yet. Sign-ups from {m.city} decide how soon we do.
             </p>
-            <WaitlistForm zip="" state={m.states[0]} nearest={m.slug} cta={`Bring it to ${m.city}`} />
+            <SignupForm source={`local-${m.slug}`} id="local-signup" cta={`Bring it to ${m.city}`} />
             <p className="small" style={{ marginTop: "var(--space-lg)" }}>
               See how it works in our first partnership, <Link to={`/local/${open.slug}`}>Ranch Cuts {open.city}</Link>. Or{" "}
               <Link to="/about#partner">tell a rancher or butcher about us</Link>.

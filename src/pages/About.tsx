@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import RcMark from "../components/RcMark";
+import SignupBand from "../components/SignupBand";
 import { LIVE, PLANNED } from "../data/partnerships";
 import { SUPPORT, ASSET } from "../data/config";
 
@@ -133,6 +134,13 @@ export default function About() {
               </ul>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* families: get notified */}
+      <section className="page section" style={{ paddingBottom: 0 }}>
+        <div className="wide">
+          <SignupBand source="about" tone="paper" title="Families: want this where you live?" />
         </div>
       </section>
 

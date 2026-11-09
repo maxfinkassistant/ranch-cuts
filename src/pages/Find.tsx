@@ -71,7 +71,7 @@ export default function Find() {
             <div>
               <span className="tag">Planned next</span>
               <p className="find-planned">{PLANNED.map((m) => m.city).join(", ")}</p>
-              <p className="small mute"><Link to="/map">See them on the map</Link></p>
+              <p className="small mute"><Link to="/map">See them on the map</Link> · <Link to="/signup">Get notified when yours opens</Link></p>
             </div>
           </div>
         </section>
@@ -144,7 +144,7 @@ function Result({ place, cov }: { place: ZipPlace; cov: Coverage }) {
             butcher who want to work together. Join the list and we'll tell you the day shares open. The more families who ask,
             the sooner {m.city} opens.
           </p>
-          <WaitlistForm zip={place.zip} place={place.place} state={place.state} nearest={m.slug} />
+          <WaitlistForm zip={place.zip} place={place.place} state={place.state} nearest={m.slug} source="find-planned" />
           <p className="small mute find-note">
             Why not ship you beef from Denver? Shares are sold in-state only. The ranch, the butcher and your pickup are always in
             the same state, and custom-cut beef can't be shipped.
@@ -174,7 +174,7 @@ function Result({ place, cov }: { place: ZipPlace; cov: Coverage }) {
           We open where families ask. Leave your email and your zip code counts toward bringing a local ranch and butcher to
           {" "}{place.state}. We'll email you once, when it opens.
         </p>
-        <WaitlistForm zip={place.zip} place={place.place} state={place.state} nearest={np?.metro.slug} />
+        <WaitlistForm zip={place.zip} place={place.place} state={place.state} nearest={np?.metro.slug} source="find-waitlist" />
         <p className="small mute find-note">
           Shares are sold in-state only: the ranch, the butcher and your pickup are always in the same state, and custom-cut beef
           can't be shipped. So the closest open partnership, Ranch Cuts {cov.nearestLive.partnership.city}, can't serve {place.state}.

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import SteerMap from "../components/SteerMap";
 import ZipSearch from "../components/ZipSearch";
+import SignupBand from "../components/SignupBand";
 import { LIVE } from "../data/partnerships";
 import {
   SHARES, DEPOSIT, SEASONS, CURRENT_SEASON, PRIMALS, money, money2, type ShareId,
@@ -240,6 +241,12 @@ export default function HowItWorks() {
         <div className="wide" style={{ display: "flex", gap: "var(--space-sm)", flexWrap: "wrap", alignItems: "center" }}>
           <Link to="/find" className="btn btn-solid btn-big">Find your ranch</Link>
           <Link to="/track/RC-SAMPLE1" className="btn btn-ghost btn-big">See a finished cut sheet</Link>
+        </div>
+      </section>
+
+      <section className="page section" style={{ paddingTop: 0 }}>
+        <div className="wide">
+          <SignupBand source="how-it-works" title="Want this where you live?" />
         </div>
       </section>
     </main>

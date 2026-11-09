@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { NavLink, Link, Outlet, useLocation } from "react-router-dom";
-import { SEASONS, CURRENT_SEASON, NEXT_SEASON, SUPPORT, ASSET, PREVIEW, THUNDERBOLT_STORE } from "../data/config";
+import { SEASONS, CURRENT_SEASON, NEXT_SEASON, SUPPORT, ASSET, PREVIEW, SIGNUPS_OPEN, THUNDERBOLT_STORE } from "../data/config";
 import { LIVE, PLANNED } from "../data/partnerships";
 import { useAvailability, seasonFull } from "../lib/availability";
+import { trackPageView } from "../lib/pixels";
 
 export default function Layout() {
   const a = useAvailability();
@@ -10,12 +11,18 @@ export default function Layout() {
   const next = SEASONS[NEXT_SEASON];
   const [menu, setMenu] = useState(false);
   const loc = useLocation();
-  useEffect(() => setMenu(false), [loc.pathname]);
+  useEffect(() => { setMenu(false); trackPageView(); }, [loc.pathname]);
 
   return (
     <>
       <div className="site-banner">
-        {PREVIEW ? (
+        {PREVIEW && SIGNUPS_OPEN ? (
+          <>
+            <Link to="/signup"><b>OPENING CITY BY CITY.</b> GET NOTIFIED WHEN A RANCH AND BUTCHER OPEN NEAR YOU</Link>
+            <span className="banner-sep" aria-hidden="true" />
+            <a href={THUNDERBOLT_STORE} target="_blank" rel="noreferrer" className="banner-planned">DENVER BEEF IS ON SALE NOW AT THUNDERBOLTBEEF.COM</a>
+          </>
+        ) : PREVIEW ? (
           <a href={THUNDERBOLT_STORE} target="_blank" rel="noreferrer">
             <b>PREVIEW SITE: RESERVATIONS OPEN SOON.</b> DENVER BEEF IS ON SALE NOW AT THUNDERBOLTBEEF.COM
           </a>
@@ -27,8 +34,14 @@ export default function Layout() {
             : <> {season.label.toUpperCase()} HARVEST, {a.known && a.reserved > 0 ? `${a.reserved} OF ${a.capacity}` : a.capacity} STEERS{a.known && a.reserved > 0 ? " RESERVED" : ""}</>}
         </Link>
         )}
-        <span className="banner-sep" aria-hidden="true" />
-        <Link to="/map" className="banner-planned">{PLANNED.length} MORE METROS PLANNED</Link>
+        {!(PREVIEW && SIGNUPS_OPEN) && (
+          <>
+            <span className="banner-sep" aria-hidden="true" />
+            <Link to={SIGNUPS_OPEN ? "/signup" : "/map"} className="banner-planned">
+              {PLANNED.length} MORE METROS PLANNED{SIGNUPS_OPEN ? ": GET NOTIFIED" : ""}
+            </Link>
+          </>
+        )}
       </div>
       <header className="site-header">
         <Link to="/" className="brand" aria-label="Ranch Cuts home">
@@ -42,6 +55,7 @@ export default function Layout() {
           <NavLink to="/how-it-works">How it works</NavLink>
           <NavLink to="/map">Map</NavLink>
           <NavLink to="/about">About us</NavLink>
+          <NavLink to="/signup">Get notified</NavLink>
           {!PREVIEW && <NavLink to="/track">Track an order</NavLink>}
           <Link to="/find" className="btn btn-solid nav-cta">Find your ranch</Link>
         </nav>
@@ -60,6 +74,7 @@ export default function Layout() {
           <div>
             <span className="tag">Families</span>
             <Link to="/find">Find your ranch</Link>
+            <Link to="/signup">Get notified when we open near you</Link>
             <Link to="/map">Map of partnerships</Link>
             <Link to="/how-it-works">How it works</Link>
             {!PREVIEW && <Link to="/track">Track an order</Link>}
@@ -69,6 +84,7 @@ export default function Layout() {
             <Link to="/about">About us</Link>
             <Link to="/about#partner">Ranchers and butchers</Link>
             <a href={`mailto:${SUPPORT.email}`}>{SUPPORT.email}</a>
+            <Link to="/privacy">Privacy</Link>
           </div>
           <div>
             <span className="tag">Open now</span>

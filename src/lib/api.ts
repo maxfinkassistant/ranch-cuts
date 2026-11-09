@@ -3,7 +3,9 @@
    browser skips CORS preflight: Apps Script web apps don't answer
    OPTIONS. Every call degrades gracefully when BACKEND_URL is unset. */
 
-import { BACKEND_URL } from "../data/config";
+import { BACKEND_URL, SIGNUP_URL } from "../data/config";
+import { attribution } from "./attribution";
+import { trackSignup } from "./pixels";
 import type { Order, Steer, SeasonSettings } from "./store";
 import type { SeasonId } from "../data/config";
 
@@ -20,10 +22,12 @@ export interface OrderPayload {
   depositLink: string;
 }
 
-/* ---------------- waitlist ----------------
-   Zip searches outside a live partnership leave an email here. With
-   a backend it lands on the "Waitlist" sheet; without one (demo mode)
-   it is kept in this browser under "rc.waitlist". */
+/* ---------------- sign-ups (the waitlist) ----------------
+   "Tell me when a ranch and butcher open near me." With a sign-up
+   endpoint (SIGNUP_URL: apps-script/Signups.gs, or the full backend)
+   it lands on a Google Sheet; without one (demo mode) it is kept in
+   this browser under "rc.waitlist". Each entry carries the form's
+   placement on the site and the ad it came from. */
 
 export interface WaitlistEntry {
   email: string;
@@ -31,16 +35,19 @@ export interface WaitlistEntry {
   place?: string;
   state?: string;
   nearest?: string;
+  /** which form on the site: "signup-page", "home-prices", "map", ... */
+  source?: string;
 }
 
 const WAITLIST_KEY = "rc.waitlist";
 
 export async function submitWaitlist(e: WaitlistEntry): Promise<{ ok: boolean; error?: string }> {
-  const entry = { ...e, email: e.email.trim(), zip: e.zip.trim(), createdAt: new Date().toISOString() };
+  const entry = { ...e, email: e.email.trim(), zip: e.zip.trim(), ...attribution(), createdAt: new Date().toISOString() };
   if (!/^\S+@\S+\.\S+$/.test(entry.email)) return { ok: false, error: "Please enter a valid email." };
-  if (backendConfigured()) {
+  if (SIGNUP_URL) {
     try {
-      await call<{ ok: true }>(BACKEND_URL, { method: "POST", body: JSON.stringify({ action: "waitlist", ...entry }) });
+      await call<{ ok: true }>(SIGNUP_URL, { method: "POST", body: JSON.stringify({ action: "waitlist", ...entry }) });
+      trackSignup(e.source);
       return { ok: true };
     } catch (err) {
       return { ok: false, error: (err as Error).message || "Could not reach the waitlist. Please try again." };
@@ -53,6 +60,7 @@ export async function submitWaitlist(e: WaitlistEntry): Promise<{ ok: boolean; e
   } catch {
     /* storage blocked (private window): demo mode still says yes */
   }
+  trackSignup(e.source);
   return { ok: true };
 }
 

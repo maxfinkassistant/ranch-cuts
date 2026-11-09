@@ -7,7 +7,14 @@ import HowItWorks from "./pages/HowItWorks";
 import About from "./pages/About";
 import Find from "./pages/Find";
 import Local from "./pages/Local";
+import Signup from "./pages/Signup";
+import Privacy from "./pages/Privacy";
+import { captureAttribution } from "./lib/attribution";
+import { initPixels } from "./lib/pixels";
 import "./styles/global.css";
+
+captureAttribution();
+initPixels();
 
 /* the national map carries the state outlines (~190 KB) and the order
    flow carries pdf-lib (~500 KB), so they load on demand */
@@ -38,6 +45,9 @@ const routes = [
       { path: "/", element: <Landing /> },
       { path: "/find", element: <Find /> },
       { path: "/find/:zip", element: <Find /> },
+      { path: "/signup", element: <Signup /> },
+      { path: "/signup/:metro", element: <Signup /> },
+      { path: "/privacy", element: <Privacy /> },
       { path: "/map", element: L(<MapPage />) },
       { path: "/local/:slug", element: <Local /> },
       { path: "/how-it-works", element: <HowItWorks /> },

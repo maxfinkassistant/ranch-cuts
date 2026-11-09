@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import { viteSingleFile } from "vite-plugin-singlefile";
 import { readFileSync, readdirSync, statSync, existsSync, mkdirSync, writeFileSync, renameSync } from "node:fs";
 import { join, extname, relative } from "node:path";
+import { LIVE, PLANNED } from "./src/data/partnerships";
 
 /* Two builds:
    - default: the real site, served from the domain root (ranchcuts.com).
@@ -101,11 +102,65 @@ function crmFileStore(): Plugin {
   };
 }
 
+/** Real HTML files for the pages that ads and shared links point at. Without them
+    GitHub Pages answers /signup from 404.html with a 404 status: the page still
+    renders, but ad reviewers and link-preview crawlers read it as a dead link.
+    Each copy carries its own title, description and link-preview tags. */
+function staticPages(): Plugin {
+  const site = "https://ranchcuts.com";
+  let outDir = "dist";
+  const offer = "Beef from a ranch near you, cut your way by a butcher near you, for less than the store.";
+  const pages = [
+    {
+      path: "signup",
+      title: "Get notified when Ranch Cuts opens near you | Ranch Cuts",
+      description: `${offer} We open one city at a time. Leave your zip code and email and we'll tell you the day yours opens.`,
+    },
+    ...PLANNED.map((m) => ({
+      path: `signup/${m.slug}`,
+      title: `Bring Ranch Cuts to ${m.city} | Ranch Cuts`,
+      description: `${offer} ${m.city} is on our list. Sign-ups decide how soon it opens.`,
+    })),
+    {
+      path: `signup/${LIVE.slug}`,
+      title: `Ranch Cuts ${LIVE.city}: reservations open soon | Ranch Cuts`,
+      description: `A quarter, half or whole steer from ${LIVE.ranch.name}, cut your way at ${LIVE.butcher.name}. Leave your zip code and email and we'll tell you the day reservations open.`,
+    },
+    {
+      path: "privacy",
+      title: "Privacy | Ranch Cuts",
+      description: "What Ranch Cuts collects when you sign up, and what we do with it.",
+    },
+  ];
+  return {
+    name: "ranch-cuts-static-pages",
+    apply: "build",
+    configResolved(c) { outDir = c.build.outDir; },
+    closeBundle() {
+      const index = join(outDir, "index.html");
+      if (!existsSync(index)) return;
+      const html = readFileSync(index, "utf8");
+      for (const p of pages) {
+        const page = html
+          .replace(/<title>[^<]*<\/title>/, `<title>${p.title}</title>`)
+          .replace(/(<meta name="description" content=")[^"]*/, `$1${p.description}`)
+          .replace(/(<meta property="og:title" content=")[^"]*/, `$1${p.title}`)
+          .replace(/(<meta property="og:description" content=")[^"]*/, `$1${p.description}`)
+          .replace(/(<meta property="og:url" content=")[^"]*/, `$1${site}/${p.path}`);
+        /* both spellings a static host may look for: /signup and /signup/ */
+        mkdirSync(join(outDir, p.path), { recursive: true });
+        writeFileSync(join(outDir, `${p.path}.html`), page);
+        writeFileSync(join(outDir, p.path, "index.html"), page);
+      }
+    },
+  };
+}
+
 export default defineConfig(({ command, mode }) => {
   const demo = mode === "demo";
   return {
     base: demo ? "./" : command === "build" ? (process.env.VITE_BASE ?? "/") : "/",
-    plugins: demo ? [react(), demoAssets(true), viteSingleFile()] : [react(), demoAssets(false), crmFileStore()],
+    plugins: demo ? [react(), demoAssets(true), viteSingleFile()] : [react(), demoAssets(false), crmFileStore(), staticPages()],
     define: { "import.meta.env.VITE_DEMO": JSON.stringify(demo ? "1" : "") },
     build: demo ? { outDir: "demo-build", emptyOutDir: true, copyPublicDir: false, chunkSizeWarningLimit: 6000 } : undefined,
     server: { port: 5177 },

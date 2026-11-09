@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import ZipSearch from "../components/ZipSearch";
 import RcMark from "../components/RcMark";
+import SignupBand from "../components/SignupBand";
 import { LIVE, PLANNED } from "../data/partnerships";
 import {
   SHARES, DEPOSIT, GROCERY_SOURCE, GROCERY_BASKET_PER_LB, SEASONS, CURRENT_SEASON, IMAGES, PRIMALS, ASSET,
@@ -15,7 +16,7 @@ const STEPS = [
   { n: "4", t: "Pick it up", b: "Your steer hangs, gets cut to your sheet, and comes out frozen, sealed and boxed with your name on it." },
 ];
 
-const FAQ = [
+const FAQ: { q: string; a: React.ReactNode }[] = [
   {
     q: "How much freezer space do I need?",
     a: `A quarter is about ${SHARES.quarter.takehome} lb of beef and needs ${SHARES.quarter.freezer} of freezer space. A half needs ${SHARES.half.freezer}, a whole ${SHARES.whole.freezer}.`,
@@ -34,7 +35,7 @@ const FAQ = [
   },
   {
     q: "What if there isn't a partnership near me?",
-    a: "Join the list from the zip code search. We open where families ask, and we'll email you once, when yours opens.",
+    a: <><Link to="/signup">Sign up with your zip code and email</Link>. We open where families ask, and we'll email you once, when yours opens.</>,
   },
 ];
 
@@ -63,6 +64,9 @@ export default function Landing() {
                 <span>Shares from {money(SHARES.quarter.total)}</span>
                 <span>{money(DEPOSIT)} holds any size</span>
                 <span>Pickup at your local butcher</span>
+              </p>
+              <p className="hero-notify">
+                Not in Colorado? <Link to="/signup">Get notified when a ranch and butcher open near you</Link>
               </p>
             </div>
           </div>
@@ -111,6 +115,10 @@ export default function Landing() {
               <span className="listing-cta">Meet the ranch and the butcher</span>
             </div>
           </Link>
+          <div className="notify-strip">
+            <p><b>Not near {LIVE.city}?</b> {PLANNED.length} more metros are planned, and sign-ups decide which one opens next.</p>
+            <Link to="/signup" className="btn btn-solid">Get notified</Link>
+          </div>
         </div>
       </section>
 
@@ -266,6 +274,12 @@ export default function Landing() {
             Ranch Cuts once; we pay them both.{" "}
             <Link to={`/local/${LIVE.slug}`}>See the Denver breakdown</Link>.
           </p>
+          <div style={{ marginTop: "var(--space-2xl)" }}>
+            <SignupBand source="home-prices" tone="paper" title="Want prices like these where you live?">
+              These are {LIVE.city} prices, because {LIVE.city} is open. Tell us where you live and we'll email you once, the day a ranch
+              and a butcher open near you. Sign-ups decide which city is next.
+            </SignupBand>
+          </div>
         </div>
       </section>
 
@@ -312,6 +326,7 @@ export default function Landing() {
             <RcMark width={120} color="var(--on-navy)" />
             <h2 className="d">Find the ranch closest to you.</h2>
             <ZipSearch dark id="zip-bottom" />
+            <p className="closing-notify">Nothing near you yet? <Link to="/signup">Get notified when it opens</Link></p>
           </div>
           <div className="closing-side">
             <span className="tag">Ranchers and butchers</span>
